@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b111c">
+  <meta name="description" content="태양과 달의 하루, 지구와 달의 공전을 시간과 함께 탐험하는 천문 시뮬레이터">
+  <title>태양과 지구와 달 · 웹 천문 시뮬레이터</title>
+  <link rel="stylesheet" href="solar-system-web.css">
+  <script src="solar-system-worker.bundle.js" defer></script>
+  <script src="solar-system-web.js" defer></script>
+</head>
+<body>
+<main>
+  <header><div class="brand"><span class="brand-icon" aria-hidden="true">☀</span><div><h1>태양과 지구와 달</h1><p>하루의 움직임부터 우주의 궤도까지</p></div></div><span class="web-badge">WEB OBSERVATORY</span></header>
+  <nav aria-label="화면 선택" class="tabs"><button data-mode="0" aria-pressed="true">태양과 지구와 달</button><button data-mode="1" aria-pressed="false">태양과 달의 하루</button><button data-mode="2" aria-pressed="false">지구와 달의 공전</button></nav>
+  <section class="timebar" aria-label="관측 시각"><span id="status" class="status">실시간</span><time id="time">계산 준비 중</time><span class="zone">KST · UTC+9</span></section>
+  <section class="stage" aria-label="천체 애니메이션">
+    <div id="left-info" class="info left"></div>
+    <div class="sky"><canvas id="sky" aria-label="태양과 달의 위치와 공전 궤도"></canvas><div class="legend"><span class="sun-dot"></span>태양 <span class="moon-dot"></span>달 <span class="earth-dot"></span>지구 / 지평선</div></div>
+    <div id="right-info" class="info right"></div>
+  </section>
+  <p id="error" role="alert" hidden></p>
+  <section class="controls" aria-label="시간 조작">
+    <div class="steps"><button data-step="-86400">-1일</button><button data-step="-3600">-1시간</button><button data-step="-600">-10분</button><button data-step="-60">-1분</button><button data-step="60">+1분</button><button data-step="600">+10분</button><button data-step="3600">+1시간</button><button data-step="86400">+1일</button></div>
+    <div class="playback"><button id="pause">일시정지</button><button id="now" class="selected">실시간으로</button><span class="speed-label">배속</span><div class="speeds" aria-label="재생 배속"><button data-speed="1" aria-pressed="true">1배</button><button data-speed="10" aria-pressed="false">10배</button><button data-speed="60" aria-pressed="false">60배</button><button data-speed="600" aria-pressed="false">600배</button><button data-speed="3600" aria-pressed="false">3,600배</button><button data-speed="86400" aria-pressed="false">86,400배</button></div></div>
+  </section>
+  <footer><form id="location-form"><span>관측 위치</span><label>위도 <input id="latitude" type="number" min="-90" max="90" step="0.0001" value="35.08" required></label><label>경도 <input id="longitude" type="number" min="-180" max="180" step="0.0001" value="128.89" required></label><button type="submit">적용</button><button type="button" id="locate">내 위치</button></form><p>← → 1시간 이동 <b>·</b> Space 재생/정지 <b>·</b> Home 현재 시각 <b>·</b> 1 / 2 / 3 화면 선택</p><p class="note">시각은 한국 표준시입니다. 천체 크기와 궤도 거리는 관찰을 위해 확대·축소한 모식도입니다. <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy Engine</a></p></footer>
+</main>
+<noscript>이 시뮬레이터를 사용하려면 JavaScript를 활성화해 주세요.</noscript>
+</body>
+</html>
