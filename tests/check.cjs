@@ -48,6 +48,7 @@ class Element {
 const ids=['sky','error','pause','now','status','latitude','longitude','location-form','locate','time','left-info','right-info'];
 const elements = Object.fromEntries(ids.map(id=>['#'+id,new Element()]));
 elements['.stage']=new Element();
+elements['#sky'].parentElement={parentElement:{clientWidth:1200}};
 const modes=[0,1,2].map(mode=>new Element({mode:String(mode)}));
 const steps=[-86400,-3600,-600,-60,60,600,3600,86400].map(step=>new Element({step:String(step)}));
 const speeds=[1,10,60,600,3600,86400].map(speed=>new Element({speed:String(speed)}));
@@ -55,7 +56,7 @@ const groups={'[data-mode]':modes,'[data-step]':steps,'[data-speed]':speeds};
 const documentEvents={};
 const document={querySelector:s=>elements[s], querySelectorAll:s=>groups[s], createElement:()=>new Element(), addEventListener:(type,handler)=>documentEvents[type]=handler};
 const store=new Map();
-let frame, now=1000, blob;
+let frame, resize, now=1000, blob;
 class FakeWorker {
   constructor() {
     this.env=workerContext();
@@ -68,12 +69,12 @@ const env={console, document, Date, Math, Map, Intl, Uint8ClampedArray, Number, 
   localStorage:{getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,value)},
   performance:{now:()=>now}, requestAnimationFrame:callback=>frame=callback,
   Worker:FakeWorker, Blob:class{constructor(parts){blob=parts.join('');}}, URL:{createObjectURL:()=>'',revokeObjectURL(){}},
-  ResizeObserver:class{constructor(callback){this.callback=callback;}observe(){this.callback([{contentRect:{width:600,height:420}}]);}}
+  ResizeObserver:class{constructor(callback){this.callback=callback;resize=callback;}observe(){this.callback([{contentRect:{width:600,height:420}}]);}}
 };
 env.window=env;
 vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
-vm.runInContext(read('solar-system-web.js'),env);
+vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; controls();requestAnimationFrame(frame);'),env);
 const tick=(ms=120)=>{now+=ms;frame(now);};
 tick();
 assert(elements['#left-info'].innerHTML.includes('일출 시각'));
@@ -96,3 +97,12 @@ elements['#latitude'].value='90';elements['#longitude'].value='0';elements['#loc
 assert(store.has('solar-web-location'));
 console.log('PASS controller: generated worker bundle, all views, pause/resume, steps, speed, keyboard, location, drawing');
 console.log('Browser visual layout and real FPS require a browser check.');
+
+resize([{contentRect:{width:760,height:420}}]);
+const combinedFrame=env.geometryForTest();
+resize([{contentRect:{width:520,height:420}}]);
+const singleFrame=env.geometryForTest();
+assert.equal(combinedFrame.middle,singleFrame.middle);
+assert.equal(combinedFrame.r,singleFrame.r);
+assert.equal(singleFrame.middle,50+210*(310/420));
+console.log('PASS geometry: identical Python-based vertical origin and radius across combined/single tab widths');
