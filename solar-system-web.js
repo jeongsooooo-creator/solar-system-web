@@ -156,12 +156,9 @@
     return {r:165*scale, middle:50+210*scale};
   }
   function daily(data,box) {
-    const {x,y,w,h}=box,{r,middle}=diagramFrame(),cx=x+w/2;
+    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(),cx=x+w/2;
     const tilt=rad(8);
-    const relativeY=body=>-r*Math.sin(rad(body.alt))+r*Math.sin(tilt)*Math.cos(rad(body.alt))*Math.cos(rad(body.az));
-    const top=-r*Math.sin(rad(Math.max(data.Sun.dec,data.Moon.dec)))-r*Math.cos(tilt);
-    const bottom=Math.max(relativeY(data.Sun),relativeY(data.Moon),r*Math.sin(tilt));
-    const cy=middle-(top+bottom)/2;
+    // Keep the horizon center at the same fixed y as the orbital Sun.
     const project=(az,alt)=>[cx+r*Math.cos(rad(alt))*Math.sin(rad(az)),cy-r*Math.sin(rad(alt))+r*Math.sin(tilt)*Math.cos(rad(alt))*Math.cos(rad(az))];
     const horizon=[];for(let i=0;i<=120;i++)horizon.push(project(i*3,0));
     ctx.beginPath();horizon.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.fillStyle='#2b655b12';ctx.fill();line(horizon,'#4b9d8970');
