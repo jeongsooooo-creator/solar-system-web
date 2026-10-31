@@ -80,7 +80,7 @@
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-  }).observe(canvas);
+  }).observe(canvas.parentElement);
   function lerp(a,b,t) { return a + (b-a)*t; }
   function angle(a,b,t) { return a + ((b-a+540)%360-180)*t; }
   function interpolated(now) {
@@ -149,7 +149,7 @@
     ctx.beginPath();ctx.ellipse(r*.6,r*.15,r*.3,r*.4,-.5,0,Math.PI*2);ctx.fill();ctx.restore();ctx.strokeStyle='#92d5dc50';ctx.beginPath();ctx.arc(x,y,r+1,0,Math.PI*2);ctx.stroke();
   }
   function daily(data,box) {
-    const {x,y,w,h}=box,r=Math.min(w*.39,h*.34),cx=x+w/2,cy=y+h*.63;
+    const {x,y,w,h}=box,plotHeight=Math.max(40,h-110),r=Math.min(w*.39,plotHeight*.43),cx=x+w/2,cy=y+50+plotHeight/2;
     const project=(az,alt)=>[cx+r*Math.cos(rad(alt))*Math.sin(rad(az)),cy-r*Math.sin(rad(alt))+r*.18*Math.cos(rad(alt))*Math.cos(rad(az))];
     const horizon=[];for(let i=0;i<=120;i++)horizon.push(project(i*3,0));
     ctx.beginPath();horizon.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.fillStyle='#2b655b12';ctx.fill();line(horizon,'#4b9d8970');
@@ -171,7 +171,7 @@
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
   }
   function orbit(data,box) {
-    const {x,y,w,h}=box,r=Math.min(w*.32,h*.31),cx=x+w/2,cy=y+h*.51;
+    const {x,y,w,h}=box,plotHeight=Math.max(40,h-110),r=Math.min(w*.32,plotHeight*.37),cx=x+w/2,cy=y+50+plotHeight/2;
     const points=[];for(let i=0;i<=180;i++){const t=i*Math.PI/90,d=r*(1-.0167**2)/(1+.0167*Math.cos(t));points.push([cx+d*Math.cos(t),cy-d*Math.sin(t)]);}line(points,'#4fae9680');
     const theta=rad(data.earth.lon),re=r*(1-.0167**2)/(1+.0167*Math.cos(theta));
     const ex=cx+re*Math.cos(theta),ey=cy-re*Math.sin(theta),mr=r*.23;
