@@ -91,3 +91,9 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
  .timebar{padding:1px 0}time{white-space:normal}footer{display:none}
  .stage .info{top:28px}
 }
+
+@media(max-width:760px){
+ .stage .info,.stage.combined .info{top:54px}
+ #sky{touch-action:manipulation;cursor:pointer}
+}
+@media(max-width:760px) and (max-height:450px){.stage .info,.stage.combined .info{top:44px}}

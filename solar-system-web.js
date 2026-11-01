@@ -54,7 +54,10 @@
     state.live = false; state.speed = +b.dataset.speed; invalidate(); controls();
   }));
   $('#pause').addEventListener('click', pause); $('#now').addEventListener('click', now);
-  $('#toggle-info').addEventListener('click', () => { showInfo = !showInfo; controls(); });
+  function toggleInfo() { showInfo = !showInfo; controls(); }
+  $('#toggle-info').addEventListener('click', toggleInfo);
+  // A click also covers a normal touch tap, without toggling twice.
+  canvas.addEventListener('click', () => { if (phone.matches) toggleInfo(); });
   phone.addEventListener('change', () => { controls(); lastInfoHTML = ''; });
   let lastArrow = 0;
   document.addEventListener('keydown', event => {
@@ -184,7 +187,10 @@
     const extent = orbital ? 1.3 : 1.12;
     const r = Math.max(1, Math.min((box.w / 2 - 22) / extent,
       (box.h / 2 - 48) / extent));
-    return {r, middle: box.y + box.h / 2 - 5};
+    const radius = phone.matches ? (showInfo ? r * .9 : Math.min(r * 1.1,
+      Math.max(1, (box.w / 2 - 6) / extent),
+      Math.max(1, (box.h / 2 - 34) / extent))) : r;
+    return {r: radius, middle: box.y + box.h / 2 - 5};
   }
   function moonHorizonRotation(data) {
     // Resolve the direction of sunlight into the Moon's local right/up sky basis.

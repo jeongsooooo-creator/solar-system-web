@@ -119,3 +119,14 @@ modes[2].click();tick();assert.equal(modes[2].attributes['aria-pressed'],'true')
 elements['#toggle-info'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'false');
 elements['#toggle-info'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
 console.log('PASS phone: individual modes only, info visibility toggle');
+
+const panel={x:0,y:0,w:360,h:420};
+const visibleOrbit=env.geometryForTest(panel,true).r;
+elements['#sky'].click();
+assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'false');
+const hiddenOrbit=env.geometryForTest(panel,true).r;
+assert(Math.abs(hiddenOrbit/visibleOrbit-1.1/.9)<1e-6);
+elements['#sky'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
+phoneMedia.matches=false;phoneMedia.change();elements['#sky'].click();
+assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
+console.log('PASS mobile orbit tap: synced info toggle and 90%/110% radius; desktop unaffected');
