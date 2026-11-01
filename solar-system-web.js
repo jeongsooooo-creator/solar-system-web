@@ -171,18 +171,11 @@
     ctx.beginPath();ctx.ellipse(r*.6,r*.15,r*.3,r*.4,-.5,0,Math.PI*2);ctx.fill();ctx.restore();ctx.strokeStyle='#92d5dc50';ctx.beginPath();ctx.arc(x,y,r+1,0,Math.PI*2);ctx.stroke();
   }
   function diagramFrame(box, orbital=false) {
-    const extent=orbital?1.3:1.12;
-    const fit=Math.max(1,Math.min((box.w/2-22)/extent,(box.h/2-48)/extent));
-    if (window.matchMedia('(max-width: 760px)').matches) {
-      // Fit each diagram to its own phone panel, including the Moon's outer orbit.
-      const r = Math.min(fit,1.2*Math.max(1, Math.min((box.w-48)/2.65, (box.h-104)/2.65)));
-      return {r, middle:box.y+box.h/2-5};
-    }
-    // Python uses a 420px crop (y=150..570), center y=360 and radius=165.
-    // Derive one scale for all tabs; changing the horizontal layout must not move y.
-    const stageWidth = canvas.parentElement?.parentElement?.clientWidth || width;
-    const scale = Math.min(Math.max(40,height-110)/420, stageWidth/1200);
-    return {r:Math.min(fit,165*scale*1.1*1.2), middle:box.y+box.h/2-5};
+    // Fit the panel while keeping labels and the outer Moon orbit inside it.
+    const extent = orbital ? 1.3 : 1.12;
+    const r = Math.max(1, Math.min((box.w / 2 - 22) / extent,
+      (box.h / 2 - 48) / extent));
+    return {r, middle: box.y + box.h / 2 - 5};
   }
   function moonHorizonRotation(data) {
     // Resolve the direction of sunlight into the Moon's local right/up sky basis.

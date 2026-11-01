@@ -71,6 +71,7 @@ const env={console, document, Date, Math, Map, Intl, Uint8ClampedArray, Number, 
   Worker:FakeWorker, Blob:class{constructor(parts){blob=parts.join('');}}, URL:{createObjectURL:()=>'',revokeObjectURL(){}},
   ResizeObserver:class{constructor(callback){this.callback=callback;resize=callback;}observe(){this.callback([{contentRect:{width:600,height:420}}]);}}
 };
+env.matchMedia=()=>({matches:false});
 env.window=env;
 vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
@@ -98,11 +99,14 @@ assert(store.has('solar-web-location'));
 console.log('PASS controller: generated worker bundle, all views, pause/resume, steps, speed, keyboard, location, drawing');
 console.log('Browser visual layout and real FPS require a browser check.');
 
-resize([{contentRect:{width:760,height:420}}]);
-const combinedFrame=env.geometryForTest();
-resize([{contentRect:{width:520,height:420}}]);
-const singleFrame=env.geometryForTest();
-assert.equal(combinedFrame.middle,singleFrame.middle);
-assert.equal(combinedFrame.r,singleFrame.r);
-assert.equal(singleFrame.middle,50+210*(310/420));
-console.log('PASS geometry: identical Python-based vertical origin and radius across combined/single tab widths');
+
+const small = env.geometryForTest({x:0,y:0,w:360,h:420},true);
+const large = env.geometryForTest({x:0,y:0,w:760,h:620},true);
+assert(large.r > small.r);
+for(const box of [{x:0,y:0,w:280,h:320},{x:0,y:320,w:400,h:400},{x:0,y:0,w:1000,h:700}]) {
+ const g = env.geometryForTest(box,true);
+ assert(g.r*1.3 <= box.w/2-22+1e-6);
+ assert(g.r*1.3 <= box.h/2-48+1e-6);
+ assert.equal(g.middle,box.y+box.h/2-5);
+}
+console.log('PASS geometry: larger panels enlarge orbits within label and Moon margins');
