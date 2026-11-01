@@ -23,3 +23,5 @@
   .info dd,.combined .info dd{font-size:15px}
   .tabs button{font-size:11px}
 }
+
+@media(max-width:760px){time{white-space:pre-line}.stage .sky{height:clamp(340px,100vw,520px)}.stage.combined .sky{height:clamp(680px,200vw,1040px)}}

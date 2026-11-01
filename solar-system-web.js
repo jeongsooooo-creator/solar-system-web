@@ -148,17 +148,19 @@
     ctx.fillStyle='#80bba1';ctx.beginPath();ctx.moveTo(-r*.85,-r*.55);ctx.lineTo(-r*.2,-r*.7);ctx.lineTo(r*.15,-r*.2);ctx.lineTo(-r*.2,r*.08);ctx.lineTo(-r*.1,r*.55);ctx.lineTo(-r*.5,r*.75);ctx.lineTo(-r*.65,r*.1);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.ellipse(r*.6,r*.15,r*.3,r*.4,-.5,0,Math.PI*2);ctx.fill();ctx.restore();ctx.strokeStyle='#92d5dc50';ctx.beginPath();ctx.arc(x,y,r+1,0,Math.PI*2);ctx.stroke();
   }
-  function diagramFrame(box) {
+  function diagramFrame(box, orbital=false) {
+    const extent=orbital?1.3:1.12;
+    const fit=Math.max(1,Math.min((box.w/2-22)/extent,(box.h/2-48)/extent));
     if (window.matchMedia('(max-width: 760px)').matches) {
       // Fit each diagram to its own phone panel, including the Moon's outer orbit.
-      const r = Math.max(1, Math.min((box.w-48)/2.65, (box.h-104)/2.65));
+      const r = Math.min(fit,1.2*Math.max(1, Math.min((box.w-48)/2.65, (box.h-104)/2.65)));
       return {r, middle:box.y+box.h/2-5};
     }
     // Python uses a 420px crop (y=150..570), center y=360 and radius=165.
     // Derive one scale for all tabs; changing the horizontal layout must not move y.
     const stageWidth = canvas.parentElement?.parentElement?.clientWidth || width;
     const scale = Math.min(Math.max(40,height-110)/420, stageWidth/1200);
-    return {r:165*scale*1.1, middle:50+210*scale};
+    return {r:Math.min(fit,165*scale*1.1*1.2), middle:box.y+box.h/2-5};
   }
   function daily(data,box) {
     const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box),cx=x+w/2;
@@ -189,7 +191,7 @@
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
   }
   function orbit(data,box) {
-    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box),cx=x+w/2;
+    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box,true),cx=x+w/2;
     const points=[];for(let i=0;i<=180;i++){const t=i*Math.PI/90,d=r*(1-.0167**2)/(1+.0167*Math.cos(t));points.push([cx+d*Math.cos(t),cy-d*Math.sin(t)]);}line(points,'#4fae9680');
     const theta=rad(data.earth.lon),re=r*(1-.0167**2)/(1+.0167*Math.cos(theta));
     const ex=cx+re*Math.cos(theta),ey=cy-re*Math.sin(theta),mr=r*.23;
@@ -224,7 +226,8 @@
     }
     const data=interpolated(now);draw(data);
     if(now-lastInfo>100){
-      const text=timeFormat.format(new Date(state.ms))+`  사용자 위치 : ${state.lat.toFixed(2)} , ${state.lon.toFixed(2)}`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
+      const mobile=window.matchMedia('(max-width: 760px)').matches;
+      const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`사용자 위치 : ${state.lat.toFixed(2)} , ${state.lon.toFixed(2)}`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
     requestAnimationFrame(frame);
