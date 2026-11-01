@@ -148,7 +148,12 @@
     ctx.fillStyle='#80bba1';ctx.beginPath();ctx.moveTo(-r*.85,-r*.55);ctx.lineTo(-r*.2,-r*.7);ctx.lineTo(r*.15,-r*.2);ctx.lineTo(-r*.2,r*.08);ctx.lineTo(-r*.1,r*.55);ctx.lineTo(-r*.5,r*.75);ctx.lineTo(-r*.65,r*.1);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.ellipse(r*.6,r*.15,r*.3,r*.4,-.5,0,Math.PI*2);ctx.fill();ctx.restore();ctx.strokeStyle='#92d5dc50';ctx.beginPath();ctx.arc(x,y,r+1,0,Math.PI*2);ctx.stroke();
   }
-  function diagramFrame() {
+  function diagramFrame(box) {
+    if (window.matchMedia('(max-width: 760px)').matches) {
+      // Fit each diagram to its own phone panel, including the Moon's outer orbit.
+      const r = Math.max(1, Math.min((box.w-48)/2.65, (box.h-104)/2.65));
+      return {r, middle:box.y+box.h/2-5};
+    }
     // Python uses a 420px crop (y=150..570), center y=360 and radius=165.
     // Derive one scale for all tabs; changing the horizontal layout must not move y.
     const stageWidth = canvas.parentElement?.parentElement?.clientWidth || width;
@@ -156,7 +161,7 @@
     return {r:165*scale*1.1, middle:50+210*scale};
   }
   function daily(data,box) {
-    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(),cx=x+w/2;
+    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box),cx=x+w/2;
     const tilt=rad(8);
     // Keep the horizon center at the same fixed y as the orbital Sun.
     const facingSouth=state.lat>=data.Sun.dec,direction=facingSouth?-1:1;
@@ -184,7 +189,7 @@
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
   }
   function orbit(data,box) {
-    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(),cx=x+w/2;
+    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box),cx=x+w/2;
     const points=[];for(let i=0;i<=180;i++){const t=i*Math.PI/90,d=r*(1-.0167**2)/(1+.0167*Math.cos(t));points.push([cx+d*Math.cos(t),cy-d*Math.sin(t)]);}line(points,'#4fae9680');
     const theta=rad(data.earth.lon),re=r*(1-.0167**2)/(1+.0167*Math.cos(theta));
     const ex=cx+re*Math.cos(theta),ey=cy-re*Math.sin(theta),mr=r*.23;
@@ -200,8 +205,13 @@
     for(let i=0;i<45;i++){const x=((i*137.508)%997)/997*width,y=((i*i*61.31)%991)/991*height;ctx.fillStyle=i%4?'#92b8db20':'#bed8ee40';ctx.fillRect(x,y,1,1);}
     if(!data){label('천체의 위치를 계산하고 있습니다',width/2,height/2,'#8fa3bd','center',13);return;}
     if(state.mode===0){
-      daily(data,{x:0,y:0,w:width/2,h:height});
-      orbit(data,{x:width/2,y:0,w:width/2,h:height});
+      if(window.matchMedia('(max-width: 760px)').matches){
+        daily(data,{x:0,y:0,w:width,h:height/2});
+        orbit(data,{x:0,y:height/2,w:width,h:height/2});
+      }else{
+        daily(data,{x:0,y:0,w:width/2,h:height});
+        orbit(data,{x:width/2,y:0,w:width/2,h:height});
+      }
     }else(state.mode===1?daily:orbit)(data,{x:0,y:0,w:width,h:height});
   }
   document.addEventListener('visibilitychange', () => { lastFrame=performance.now();lastRequest=-Infinity; });
