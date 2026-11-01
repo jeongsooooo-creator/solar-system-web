@@ -57,8 +57,10 @@
       if (!event.repeat || performance.now() - lastArrow > 70) { step(event.key === 'ArrowLeft' ? -3600 : 3600); lastArrow = performance.now(); }
     } else if (actions[event.key]) { event.preventDefault(); if (!event.repeat) actions[event.key](); }
   });
+  let locationRevision = 0;
   function location(lat, lon) {
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) { error('위도는 -90~90, 경도는 -180~180 사이로 입력해 주세요.'); return; }
+    locationRevision++;
     state.lat = lat; state.lon = lon;
     error('');
     $('#latitude').value = lat.toFixed(4); $('#longitude').value = lon.toFixed(4);
@@ -66,14 +68,29 @@
     try { localStorage.setItem('solar-web-location', JSON.stringify([lat,lon])); } catch (_) { /* Storage may be disabled. */ }
   }
   $('#location-form').addEventListener('submit', event => { event.preventDefault(); location(+$('#latitude').value, +$('#longitude').value); });
-  $('#locate').addEventListener('click', () => {
+  function locateDevice() {
     if (!navigator.geolocation) { error('이 브라우저에서는 위치 조회를 지원하지 않습니다. 좌표를 직접 입력해 주세요.'); return; }
-    $('#locate').disabled = true;
-    navigator.geolocation.getCurrentPosition(p => { $('#locate').disabled = false; location(p.coords.latitude, p.coords.longitude); }, () => {
-      $('#locate').disabled = false; error('현재 위치를 가져오지 못했습니다. 브라우저의 위치 권한을 확인하거나 좌표를 직접 입력해 주세요.');
-    }, {timeout:10000, maximumAge:300000});
-  });
+    const button = $('#locate'), revision = locationRevision;
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = '위치 확인 중…';
+    const finish = () => { button.disabled = false; button.textContent = '내 위치'; };
+    navigator.geolocation.getCurrentPosition(p => {
+      finish();
+      // Keep a manually entered location if it changed while permission was pending.
+      if (revision === locationRevision) location(p.coords.latitude, p.coords.longitude);
+    }, failure => {
+      finish();
+      if (revision !== locationRevision) return;
+      const reason = failure.code === 1 ? '위치 권한이 허용되지 않았습니다.' :
+        failure.code === 3 ? '위치 확인 시간이 초과되었습니다.' : '기기의 위치를 확인하지 못했습니다.';
+      error(reason + ' 기존 관측 좌표를 유지합니다. 권한을 확인한 뒤 내 위치를 다시 누르거나 좌표를 직접 입력해 주세요.');
+    }, {enableHighAccuracy:true, timeout:20000, maximumAge:0});
+  }
+  $('#locate').addEventListener('click', locateDevice);
   try { const saved = JSON.parse(localStorage.getItem('solar-web-location')); if (Array.isArray(saved) && saved.length === 2) location(...saved); } catch (_) { /* Use default Busan coordinates. */ }
+  // Request one fresh, high-accuracy device fix on phones, in either orientation.
+  if (/Android|iPhone|iPod/i.test(navigator.userAgent)) locateDevice();
   new ResizeObserver(entries => {
     const box = entries[0].contentRect;
     width = box.width; height = box.height;
