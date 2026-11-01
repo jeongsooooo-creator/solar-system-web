@@ -135,7 +135,7 @@
       [['달의 방향각',degree(data.Moon.az)],['달의 고도각',degree(data.Moon.alt)],['월출 시각',event(snapshot.times.Moon.rise)],['월몰 시각',event(snapshot.times.Moon.set)]]
     ];
     const orbit = [
-      [['지구의 황경',degree(data.earth.lon)],['지구의 황위',degree(data.earth.lat)],['지구–태양 거리',data.earth.distance.toFixed(6)+' <small>AU</small>'],['태양의 적위',degree(data.earth.dec)]],
+      [['지구의 황경',degree(data.earth.lon)],['지구의 황위',degree(data.earth.lat)],['지구–태양 거리',data.earth.distance.toFixed(4)+' <small>AU</small>'],['태양의 적위',degree(data.earth.dec)]],
       [['달의 황경',degree(data.moon.lon)],['달의 황위',degree(data.moon.lat)],['지구–달 거리',Math.round(data.moon.distance).toLocaleString()+' <small>km</small>'],['달의 적위',degree(data.moon.dec)]]
     ];
     const block = (title, rows) => '<h2>'+title+'</h2><dl>'+rows.map(([label,value]) => '<div class="datum"><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>';

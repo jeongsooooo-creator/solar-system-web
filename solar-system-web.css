@@ -102,3 +102,11 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
  .stage .info.left{transform:translateX(var(--info-left-shift,0px))}
  .stage .info.right{transform:translateX(var(--info-right-shift,0px))}
 }
+
+/* Let orbit lines remain visible behind mobile information. */
+@media(max-width:760px){
+ .stage .info,.stage.combined .info{top:70px;padding:5px 0;background:transparent;border-radius:0;text-shadow:0 1px 2px #0b111c}
+ .stage .info.left{left:-3px}.stage .info.right{right:-3px}
+ .stage .info dt{color:#b8c7d8;font-weight:500}
+}
+@media(max-width:760px) and (max-height:450px){.stage .info,.stage.combined .info{top:60px}}
