@@ -127,7 +127,7 @@
       [['달의 황경',degree(data.moon.lon)],['달의 황위',degree(data.moon.lat)],['지구–달 거리',Math.round(data.moon.distance).toLocaleString()+' <small>km</small>'],['달의 적위',degree(data.moon.dec)]]
     ];
     const block = (title, rows) => '<h2>'+title+'</h2><dl>'+rows.map(([label,value]) => '<div class="datum"><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>';
-    const html = state.mode === 0 ? [block('태양 · 하루',day[0])+block('지구 · 공전',orbit[0]),block('달 · 하루',day[1])+block('달 · 공전',orbit[1])] : state.mode === 1 ? [block('SUN / 태양',day[0]),block('MOON / 달',day[1])] : [block('EARTH / 지구',orbit[0]),block('MOON / 달',orbit[1])];
+    const html = state.mode === 0 ? [block('태양 · 하루',day[0])+block('달 · 하루',day[1]),block('지구 · 공전',orbit[0])+block('달 · 공전',orbit[1])] : state.mode === 1 ? [block('SUN / 태양',day[0]),block('MOON / 달',day[1])] : [block('EARTH / 지구',orbit[0]),block('MOON / 달',orbit[1])];
     const joined = html.join('|');
     if (joined !== lastInfoHTML) { $('#left-info').innerHTML = html[0]; $('#right-info').innerHTML = html[1]; lastInfoHTML = joined; }
   }
