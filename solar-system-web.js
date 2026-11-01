@@ -144,7 +144,7 @@
     const g=ctx.createRadialGradient(x-r*.3,y-r*.3,1,x,y,r);g.addColorStop(0,'#fff6cb');g.addColorStop(.65,'#f9d37c');g.addColorStop(1,'#d99a3e');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
   }
   let moonKey='',moonImage;
-  function moon(x,y,r,phase,below=false) {
+  function moon(x,y,r,phase,below=false,rotation=0) {
     if(below){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle='#a4bad3';ctx.stroke();return;}
     const key=Math.round(phase*2);
     if(key!==moonKey){
@@ -157,7 +157,12 @@
         const shade=(25+205*Math.sqrt(light))*texture,k=(j*80+i)*4;
         img.data[k]=shade;img.data[k+1]=shade*1.015;img.data[k+2]=shade*1.04;img.data[k+3]=255;
       }c.putImageData(img,0,0);
-    }ctx.drawImage(moonImage,x-r,y-r,r*2,r*2);
+    }
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(rotation);
+    ctx.drawImage(moonImage,-r,-r,r*2,r*2);
+    ctx.restore();
   }
   function earth(x,y,r) {
     ctx.save();ctx.translate(x,y);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.clip();
@@ -178,6 +183,19 @@
     const stageWidth = canvas.parentElement?.parentElement?.clientWidth || width;
     const scale = Math.min(Math.max(40,height-110)/420, stageWidth/1200);
     return {r:Math.min(fit,165*scale*1.1*1.2), middle:box.y+box.h/2-5};
+  }
+  function moonHorizonRotation(data) {
+    // Resolve the direction of sunlight into the Moon's local right/up sky basis.
+    // This includes the parallactic rotation as the Moon crosses the sky.
+    const deltaAz=rad(data.Sun.az-data.Moon.az);
+    const sunAlt=rad(data.Sun.alt), moonAlt=rad(data.Moon.alt);
+    const right=Math.cos(sunAlt)*Math.sin(deltaAz);
+    const up=Math.sin(sunAlt)*Math.cos(moonAlt)
+      -Math.cos(sunAlt)*Math.sin(moonAlt)*Math.cos(deltaAz);
+    if(Math.hypot(right,up)<1e-8) return 0; // Limb angle is undefined at exact alignment.
+    const limb=Math.atan2(-up,right); // Canvas y points down.
+    const textureSide=Math.sin(rad(data.phase))>=0?0:Math.PI;
+    return Math.atan2(Math.sin(limb-textureSide),Math.cos(limb-textureSide));
   }
   function daily(data,box) {
     const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box),cx=x+w/2;
@@ -202,7 +220,7 @@
     for(const [az,text]of[[90,'동'],[270,'서'],[0,'북'],[180,'남']]){const p=project(az,0),dx=p[0]-cx,dy=p[1]-cy,d=Math.hypot(dx,dy);label(text,p[0]+13*dx/d,p[1]+13*dy/d+4);}
     const sp=project(data.Sun.az,data.Sun.alt),mp=project(data.Moon.az,data.Moon.alt);
     line([[cx,cy],sp],'#e7bc4830');line([[cx,cy],mp],'#cbdcf330');
-    sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0);
+    sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0,moonHorizonRotation(data));
     ctx.fillStyle='#a9c5cf';ctx.beginPath();ctx.arc(cx,cy-9,3,0,Math.PI*2);ctx.fill();line([[cx,cy-5],[cx,cy+6]],'#a9c5cf');line([[cx-4,cy+12],[cx,cy+6],[cx+4,cy+12]],'#a9c5cf');
     label('태양과 달의 하루',cx,y+29,'#afc2d8','center',12);
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
