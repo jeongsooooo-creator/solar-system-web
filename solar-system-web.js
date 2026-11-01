@@ -153,7 +153,7 @@
     // Derive one scale for all tabs; changing the horizontal layout must not move y.
     const stageWidth = canvas.parentElement?.parentElement?.clientWidth || width;
     const scale = Math.min(Math.max(40,height-110)/420, stageWidth/1200);
-    return {r:165*scale, middle:50+210*scale};
+    return {r:165*scale*1.1, middle:50+210*scale};
   }
   function daily(data,box) {
     const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(),cx=x+w/2;
