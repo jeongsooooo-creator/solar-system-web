@@ -2,7 +2,9 @@
 (() => {
   const $ = selector => document.querySelector(selector);
   const canvas = $('#sky'), ctx = canvas.getContext('2d');
-  const state = {ms: Date.now(), live: true, playing: true, speed: 1, mode: 0, lat: 35.08, lon: 128.89, version: 0};
+  const phone = window.matchMedia('(max-width: 760px)');
+  let showInfo = true;
+  const state = {ms: Date.now(), live: true, playing: true, speed: 1, mode: phone.matches ? 1 : 0, lat: 35.08, lon: 128.89, version: 0};
   const MIN = Date.parse('1900-01-01T00:00:00+09:00'), MAX = Date.parse('2050-12-31T23:59:59+09:00');
   const rad = x => x * Math.PI / 180;
   const timeFormat = new Intl.DateTimeFormat('sv-SE', {timeZone: 'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
@@ -29,6 +31,11 @@
     if (state.ms !== ms) { state.playing = false; error('지원 시각 범위는 1900년부터 2050년까지입니다.'); }
   }
   function controls() {
+    if (phone.matches && state.mode === 0) state.mode = 1;
+    if (phone.matches && state.speed === 86400) { state.speed = 1; invalidate(); }
+    $('.stage').classList.toggle('info-hidden', !showInfo);
+    $('#toggle-info').textContent = showInfo ? '정보 감추기' : '정보 보기';
+    $('#toggle-info').setAttribute('aria-expanded', String(showInfo));
     document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.mode === state.mode)));
     document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.speed === state.speed)));
     $('#pause').textContent = state.playing ? '일시정지' : '재생';
@@ -47,6 +54,8 @@
     state.live = false; state.speed = +b.dataset.speed; invalidate(); controls();
   }));
   $('#pause').addEventListener('click', pause); $('#now').addEventListener('click', now);
+  $('#toggle-info').addEventListener('click', () => { showInfo = !showInfo; controls(); });
+  phone.addEventListener('change', () => { controls(); lastInfoHTML = ''; });
   let lastArrow = 0;
   document.addEventListener('keydown', event => {
     if (event.target.closest('input,textarea,select') || event.ctrlKey || event.metaKey || event.altKey) return;

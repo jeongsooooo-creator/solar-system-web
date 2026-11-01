@@ -21,14 +21,14 @@
   <meta name="twitter:title" content="태양과 지구와 달">
   <meta name="twitter:description" content="하루의 움직임부터 우주의 궤도까지">
   <meta name="twitter:image" content="https://jeongsooooo-creator.github.io/solar-system-web/solar-system-preview-credit.png">
-  <link rel="stylesheet" href="solar-system-web.css?v=20261102-compact2">
+  <link rel="stylesheet" href="solar-system-web.css?v=20261102-mobile3">
   <script src="solar-system-worker.bundle.js" defer></script>
-  <script src="solar-system-web.js?v=20261102-compact2" defer></script>
+  <script src="solar-system-web.js?v=20261102-mobile3" defer></script>
 </head>
 <body>
 <main>
   <header><div class="brand"><span class="brand-icon" aria-hidden="true">☀</span><div><h1>태양과 지구와 달</h1><p>하루의 움직임부터 우주의 궤도까지</p></div></div>
-  <nav aria-label="화면 선택" class="tabs"><button data-mode="0" aria-pressed="true">태양과 지구와 달</button><button data-mode="1" aria-pressed="false">태양과 달의 하루</button><button data-mode="2" aria-pressed="false">지구와 달의 공전</button></nav><span class="web-badge">WEB OBSERVATORY</span></header>
+  <nav aria-label="화면 선택" class="tabs"><button data-mode="0" aria-pressed="true">태양과 지구와 달</button><button data-mode="1" aria-pressed="false">태양과 달의 하루</button><button data-mode="2" aria-pressed="false">지구와 달의 공전</button></nav><button id="toggle-info" aria-expanded="true" aria-controls="left-info right-info">정보 감추기</button><span class="web-badge">WEB OBSERVATORY</span></header>
   <section class="timebar" aria-label="관측 시각"><span id="status" class="status">실시간</span><time id="time">계산 준비 중</time><span class="zone">KST · UTC+9</span></section>
   <section class="stage" aria-label="천체 애니메이션">
     <div id="left-info" class="info left"></div>

@@ -45,7 +45,7 @@ class Element {
   closest(selector) { return selector.split(',').includes(this.tagName.toLowerCase()) ? this : null; }
   click() { this.events.click?.({target:this}); }
 }
-const ids=['sky','error','pause','now','status','latitude','longitude','location-form','locate','time','left-info','right-info'];
+const ids=['sky','error','pause','now','status','latitude','longitude','location-form','locate','time','left-info','right-info','toggle-info'];
 const elements = Object.fromEntries(ids.map(id=>['#'+id,new Element()]));
 elements['.stage']=new Element();
 elements['#sky'].parentElement={parentElement:{clientWidth:1200}};
@@ -71,7 +71,8 @@ const env={console, document, Date, Math, Map, Intl, Uint8ClampedArray, Number, 
   Worker:FakeWorker, Blob:class{constructor(parts){blob=parts.join('');}}, URL:{createObjectURL:()=>'',revokeObjectURL(){}},
   ResizeObserver:class{constructor(callback){this.callback=callback;resize=callback;}observe(){this.callback([{contentRect:{width:600,height:420}}]);}}
 };
-env.matchMedia=()=>({matches:false});
+const phoneMedia={matches:false,addEventListener(type,handler){this.change=handler;}};
+env.matchMedia=()=>phoneMedia;
 env.window=env;
 vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
@@ -110,3 +111,11 @@ for(const box of [{x:0,y:0,w:280,h:320},{x:0,y:320,w:400,h:400},{x:0,y:0,w:1000,
  assert.equal(g.middle,box.y+box.h/2-5);
 }
 console.log('PASS geometry: larger panels enlarge orbits within label and Moon margins');
+
+phoneMedia.matches=true;phoneMedia.change();tick();
+assert.equal(modes[1].attributes['aria-pressed'],'true');
+key('1');tick();assert.equal(modes[1].attributes['aria-pressed'],'true');
+modes[2].click();tick();assert.equal(modes[2].attributes['aria-pressed'],'true');
+elements['#toggle-info'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'false');
+elements['#toggle-info'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
+console.log('PASS phone: individual modes only, info visibility toggle');
