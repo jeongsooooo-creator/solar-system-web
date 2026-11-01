@@ -46,3 +46,14 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
  footer p{font-size:9px}footer b{padding:0 3px}.note{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){button{transition:none}}
+
+/* Keep all twelve time/playback buttons on a single compact desktop row. */
+@media(min-width:761px){
+ .controls{flex:0 0 auto;display:flex;flex-wrap:nowrap;align-items:center;gap:5px;padding-top:5px}
+ .controls .steps,.controls .playback,.controls .speeds{display:contents}
+ .controls button{flex:0 1 80px;width:80px;min-width:0;height:26px;min-height:26px;padding:2px 4px;font-size:11px;line-height:18px;border-radius:5px}
+ .controls .speed-label{flex:0 0 auto;font-size:10px;padding:0 3px}
+ footer{flex:0 0 auto;padding-top:5px}
+ footer p{margin-top:3px}
+ .stage,.stage.combined{flex:1 1 0;min-height:360px}
+}
