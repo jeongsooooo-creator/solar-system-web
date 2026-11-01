@@ -244,7 +244,24 @@
     label('지구와 달의 공전',cx,y+29,'#afc2d8','center',12);
     label('황도면을 위에서 본 모습 · 반시계 방향 공전',cx,y+h-38,'#61768e','center',9);
   }
+  let lastInfoSpacing = '';
+  function positionDesktopInfo() {
+    if (phone.matches) return;
+    const panel = {x:0,y:0,w:state.mode === 0 ? width / 2 : width,h:height};
+    const leftExtent = state.mode === 2 ? 1.3 : 1.12;
+    const rightExtent = state.mode === 1 ? 1.12 : 1.3;
+    // Move each info panel halfway across the whitespace to its nearest orbit.
+    const left = Math.max(0, (panel.w / 2 - diagramFrame(panel,state.mode === 2).r * leftExtent + 8) / 2);
+    const right = Math.max(0, (panel.w / 2 - diagramFrame(panel,state.mode !== 1).r * rightExtent + 8) / 2);
+    const spacing = left + ',' + right;
+    if (spacing !== lastInfoSpacing) {
+      $('.stage').style.setProperty('--info-left-shift', left + 'px');
+      $('.stage').style.setProperty('--info-right-shift', -right + 'px');
+      lastInfoSpacing = spacing;
+    }
+  }
   function draw(data) {
+    positionDesktopInfo();
     ctx.clearRect(0,0,width,height);
     // Deterministic, static star field; no visual jitter between frames.
     for(let i=0;i<45;i++){const x=((i*137.508)%997)/997*width,y=((i*i*61.31)%991)/991*height;ctx.fillStyle=i%4?'#92b8db20':'#bed8ee40';ctx.fillRect(x,y,1,1);}

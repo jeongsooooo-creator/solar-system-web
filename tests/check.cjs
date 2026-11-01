@@ -38,7 +38,7 @@ console.log('PASS worker: positions, distances, date limits, polar regions, KST 
 const gradient = {addColorStop(){}};
 const context = new Proxy({createRadialGradient:()=>gradient, createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)})}, {get:(object,key)=>key in object ? object[key] : ()=>{}});
 class Element {
-  constructor(dataset={}) { this.dataset=dataset; this.events={}; this.attributes={}; this.textContent=''; this.innerHTML=''; this.value=''; this.hidden=true; this.tagName='DIV'; this.classList={toggle(){}}; }
+  constructor(dataset={}) { this.dataset=dataset; this.events={}; this.attributes={}; this.textContent=''; this.innerHTML=''; this.value=''; this.hidden=true; this.tagName='DIV'; this.style={setProperty(){}}; this.classList={toggle(){}}; }
   addEventListener(type, handler) { this.events[type]=handler; }
   setAttribute(key, value) { this.attributes[key]=value; }
   getContext() { return context; }
