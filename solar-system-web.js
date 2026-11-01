@@ -159,7 +159,11 @@
     const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(),cx=x+w/2;
     const tilt=rad(8);
     // Keep the horizon center at the same fixed y as the orbital Sun.
-    const project=(az,alt)=>[cx+r*Math.cos(rad(alt))*Math.sin(rad(az)),cy-r*Math.sin(rad(alt))+r*Math.sin(tilt)*Math.cos(rad(alt))*Math.cos(rad(az))];
+    const facingSouth=state.lat>=data.Sun.dec,direction=facingSouth?-1:1;
+    const project=(az,alt)=>[
+      cx+direction*r*Math.cos(rad(alt))*Math.sin(rad(az)),
+      cy-r*Math.sin(rad(alt))*Math.cos(tilt)-direction*r*Math.sin(tilt)*Math.cos(rad(alt))*Math.cos(rad(az))
+    ];
     const horizon=[];for(let i=0;i<=120;i++)horizon.push(project(i*3,0));
     ctx.beginPath();horizon.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.fillStyle='#2b655b12';ctx.fill();line(horizon,'#4b9d8970');
     for(const [body,color] of [['Sun','#e4bd6170'],['Moon','#b4cae270']]){
@@ -171,7 +175,7 @@
         if(prev!==null&&prev!==visible){segment.push(p);(prev?up:down).push(segment);segment=[p];}else segment.push(p);prev=visible;
       }(prev?up:down).push(segment);down.forEach(p=>line(p,color,true));up.forEach(p=>line(p,color));
     }
-    for(const [az,text]of[[90,'동'],[270,'서'],[0,'북'],[180,'남']]){const p=project(az,0);label(text,p[0]+(az===90?13:az===270?-13:0),p[1]+(az===180?19:-9));}
+    for(const [az,text]of[[90,'동'],[270,'서'],[0,'북'],[180,'남']]){const p=project(az,0),dx=p[0]-cx,dy=p[1]-cy,d=Math.hypot(dx,dy);label(text,p[0]+13*dx/d,p[1]+13*dy/d+4);}
     const sp=project(data.Sun.az,data.Sun.alt),mp=project(data.Moon.az,data.Moon.alt);
     line([[cx,cy],sp],'#e7bc4830');line([[cx,cy],mp],'#cbdcf330');
     sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0);
@@ -210,7 +214,7 @@
     }
     const data=interpolated(now);draw(data);
     if(now-lastInfo>100){
-      const text=timeFormat.format(new Date(state.ms));if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
+      const text=timeFormat.format(new Date(state.ms))+`  사용자 위치 : ${state.lat.toFixed(2)} , ${state.lon.toFixed(2)}`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
     requestAnimationFrame(frame);
