@@ -132,7 +132,7 @@ assert(hiddenOrbit >= visibleOrbit);
 elements['#sky'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
 phoneMedia.matches=false;phoneMedia.change();elements['#sky'].click();
 assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
-console.log('PASS mobile orbit tap: synced info toggle and 90%/110% radius; desktop unaffected');
+console.log('PASS mobile orbit tap: synced info toggle and available-space radius; desktop unaffected');
 
 for(const [phase,fraction,expected] of [[0,0,0],[90,.5,90],[180,1,180],[270,.5,270]]) {
  assert(Math.abs(env.phaseForTest({phase,fraction})-expected)<1e-8);
@@ -155,3 +155,10 @@ for(const earthLon of [0,90,180,270])for(const moonLon of [0,90,180,270]){
  assert(Math.cos(a)*dx+Math.sin(a)*dy>0);
 }
 console.log('PASS orbital lighting: Sun-facing half disk, actual AU/km distance ratio, all quadrants');
+for(const [w,h] of [[280,240],[304,300],[344,390],[374,480]]) {
+ const g=env.geometryForTest({x:0,y:0,w,h},true);
+ assert(g.r*1.3+22<=w/2+1e-6);
+ assert(g.r*1.3+24<=h/2+1e-6);
+}
+assert(!read('solar-system-web.js').includes("label('점선은 지평선 아래의 경로"));
+console.log('PASS compact phone geometry and removed diagram captions');
