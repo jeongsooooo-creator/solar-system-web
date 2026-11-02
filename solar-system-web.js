@@ -127,6 +127,29 @@
     out.phase = angle(snapshot.current.phase, snapshot.future.phase,t);
     return out;
   }
+  const tooltip = document.createElement('div');
+  tooltip.className = 'body-tooltip info';
+  tooltip.setAttribute('role', 'tooltip');
+  tooltip.hidden = true;
+  document.body.appendChild(tooltip);
+  let targets = [], pointer = null, tooltipBlocks = {};
+  function updateTooltip() {
+    const rect = canvas.getBoundingClientRect();
+    const target = !phone.matches && pointer && targets.slice().reverse().find(t =>
+      Math.hypot(pointer.x - rect.left - t.x, pointer.y - rect.top - t.y) <= Math.max(t.r, 12));
+    const html = target && tooltipBlocks[target.key];
+    tooltip.hidden = !html;
+    canvas.style.cursor = target ? 'pointer' : '';
+    if (!html) return;
+    if (tooltip.innerHTML !== html) tooltip.innerHTML = html;
+    const box = tooltip.getBoundingClientRect();
+    let x = pointer.x + 18, y = pointer.y + 12;
+    if (x + box.width > window.innerWidth - 8) x = pointer.x - box.width - 18;
+    tooltip.style.left = Math.max(8, x) + 'px';
+    tooltip.style.top = Math.max(8, Math.min(y, window.innerHeight - box.height - 8)) + 'px';
+  }
+  canvas.addEventListener('pointermove', event => { pointer = {x:event.clientX,y:event.clientY}; updateTooltip(); });
+  canvas.addEventListener('pointerleave', () => { pointer = null; updateTooltip(); });
   function info(data) {
     const degree = n => n.toFixed(4) + '<small>°</small>';
     const event = ms => ms === null ? '오늘 없음' : clockFormat.format(new Date(ms));
@@ -139,6 +162,7 @@
       [['달의 황경',degree(data.moon.lon)],['달의 황위',degree(data.moon.lat)],['지구–달 거리',Math.round(data.moon.distance).toLocaleString()+' <small>km</small>'],['달의 적위',degree(data.moon.dec)]]
     ];
     const block = (title, rows) => '<h2>'+title+'</h2><dl>'+rows.map(([label,value]) => '<div class="datum"><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>';
+    tooltipBlocks = {sun: block('태양 · 하루',day[0]), moon: block('달 · 하루',day[1]), earth: block('지구 · 공전',orbit[0]), orbitalMoon: block('달 · 공전',orbit[1])};
     const html = state.mode === 0 ? [block('태양 · 하루',day[0])+block('달 · 하루',day[1]),block('지구 · 공전',orbit[0])+block('달 · 공전',orbit[1])] : state.mode === 1 ? [block('SUN / 태양',day[0]),block('MOON / 달',day[1])] : [block('EARTH / 지구',orbit[0]),block('MOON / 달',orbit[1])];
     const joined = html.join('|');
     if (joined !== lastInfoHTML) { $('#left-info').innerHTML = html[0]; $('#right-info').innerHTML = html[1]; lastInfoHTML = joined; }
@@ -227,6 +251,7 @@
     }
     for(const [az,text]of[[90,'동'],[270,'서'],[0,'북'],[180,'남']]){const p=project(az,0),dx=p[0]-cx,dy=p[1]-cy,d=Math.hypot(dx,dy);label(text,p[0]+13*dx/d,p[1]+13*dy/d+4);}
     const sp=project(data.Sun.az,data.Sun.alt),mp=project(data.Moon.az,data.Moon.alt);
+    targets.push({key:'sun',x:sp[0],y:sp[1],r:Math.max(8,r*.09)}, {key:'moon',x:mp[0],y:mp[1],r:Math.max(8,r*.085)});
     line([[cx,cy],sp],'#e7bc4830');line([[cx,cy],mp],'#cbdcf330');
     sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0,moonHorizonRotation(data));
     ctx.fillStyle='#a9c5cf';ctx.beginPath();ctx.arc(cx,cy-9,3,0,Math.PI*2);ctx.fill();line([[cx,cy-5],[cx,cy+6]],'#a9c5cf');line([[cx-4,cy+12],[cx,cy+6],[cx+4,cy+12]],'#a9c5cf');
@@ -240,27 +265,34 @@
     const ex=cx+re*Math.cos(theta),ey=cy-re*Math.sin(theta),mr=r*.23;
     const mp=[];for(let i=0;i<=90;i++){const t=i*Math.PI/45,d=mr*(1-.0549**2)/(1+.0549*Math.cos(t));mp.push([ex+d*Math.cos(t),ey-d*Math.sin(t)]);}line(mp,'#a9d8ff');
     const m=rad(data.moon.lon),md=mr*(1-.0549**2)/(1+.0549*Math.cos(m));
+    targets.push({key:'earth',x:cx,y:cy,r:Math.max(10,r*.11)}, {key:'earth',x:ex,y:ey,r:Math.max(6,r*.065)}, {key:'orbitalMoon',x:ex+md*Math.cos(m),y:ey-md*Math.sin(m),r:Math.max(4,r*.04)});
     line([[cx,cy],[ex,ey]],'#558a7f35');sun(cx,cy,Math.max(10,r*.11));earth(ex,ey,Math.max(6,r*.065));moon(ex+md*Math.cos(m),ey-md*Math.sin(m),Math.max(4,r*.04),180);
     label('지구와 달의 공전',cx,y+29,'#afc2d8','center',12);
     label('황도면을 위에서 본 모습 · 반시계 방향 공전',cx,y+h-38,'#61768e','center',9);
   }
+  function desktopPanels() {
+    const half = {x:0,y:0,w:width/2,h:height};
+    const extent = Math.max(diagramFrame(half).r*1.12, diagramFrame(half,true).r*1.3);
+    const distance = Math.min(width/4, extent + 24);
+    return [{...half,x:width/2-distance-width/4}, {...half,x:width/2+distance-width/4}];
+  }
   let lastInfoSpacing = '';
   function positionDesktopInfo() {
     if (phone.matches) return;
-    const panel = {x:0,y:0,w:state.mode === 0 ? width / 2 : width,h:height};
-    const leftExtent = state.mode === 2 ? 1.3 : 1.12;
-    const rightExtent = state.mode === 1 ? 1.12 : 1.3;
-    // Move each info panel halfway across the whitespace to its nearest orbit.
-    const left = Math.max(0, (panel.w / 2 - diagramFrame(panel,state.mode === 2).r * leftExtent + 8) / 2);
-    const right = Math.max(0, (panel.w / 2 - diagramFrame(panel,state.mode !== 1).r * rightExtent + 8) / 2);
-    const spacing = left + ',' + right;
+    const panels = state.mode === 0 ? desktopPanels() : [{x:0,y:0,w:width,h:height}];
+    const leftPanel = panels[0], rightPanel = panels[panels.length-1];
+    const leftEdge = leftPanel.x+leftPanel.w/2-diagramFrame(leftPanel,state.mode===2).r*(state.mode===2?1.3:1.12);
+    const rightEdge = rightPanel.x+rightPanel.w/2+diagramFrame(rightPanel,state.mode!==1).r*(state.mode===1?1.12:1.3);
+    const left = Math.max(0,leftEdge-26), right = Math.min(0,rightEdge-width+26);
+    const spacing = left+','+right;
     if (spacing !== lastInfoSpacing) {
-      $('.stage').style.setProperty('--info-left-shift', left + 'px');
-      $('.stage').style.setProperty('--info-right-shift', -right + 'px');
+      $('.stage').style.setProperty('--info-left-shift',left+'px');
+      $('.stage').style.setProperty('--info-right-shift',right+'px');
       lastInfoSpacing = spacing;
     }
   }
   function draw(data) {
+    targets = [];
     positionDesktopInfo();
     ctx.clearRect(0,0,width,height);
     // Deterministic, static star field; no visual jitter between frames.
@@ -271,8 +303,9 @@
         daily(data,{x:0,y:0,w:width,h:height/2});
         orbit(data,{x:0,y:height/2,w:width,h:height/2});
       }else{
-        daily(data,{x:0,y:0,w:width/2,h:height});
-        orbit(data,{x:width/2,y:0,w:width/2,h:height});
+        const panels = desktopPanels();
+        daily(data,panels[0]);
+        orbit(data,panels[1]);
       }
     }else(state.mode===1?daily:orbit)(data,{x:0,y:0,w:width,h:height});
   }
@@ -290,6 +323,7 @@
       const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`사용자 위치 : ${state.lat.toFixed(2)} , ${state.lon.toFixed(2)}`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
+    updateTooltip();
     requestAnimationFrame(frame);
   }
   controls();requestAnimationFrame(frame);
