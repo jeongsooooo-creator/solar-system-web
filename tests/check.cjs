@@ -42,6 +42,8 @@ class Element {
   addEventListener(type, handler) { this.events[type]=handler; }
   setAttribute(key, value) { this.attributes[key]=value; }
   getContext() { return context; }
+  appendChild() {}
+  getBoundingClientRect() { return {left:0,top:0,width:200,height:100}; }
   closest(selector) { return selector.split(',').includes(this.tagName.toLowerCase()) ? this : null; }
   click() { this.events.click?.({target:this}); }
 }
@@ -55,6 +57,7 @@ const speeds=[1,10,60,600,3600,86400].map(speed=>new Element({speed:String(speed
 const groups={'[data-mode]':modes,'[data-step]':steps,'[data-speed]':speeds};
 const documentEvents={};
 const document={querySelector:s=>elements[s], querySelectorAll:s=>groups[s], createElement:()=>new Element(), addEventListener:(type,handler)=>documentEvents[type]=handler};
+document.body=new Element();
 const store=new Map();
 let frame, resize, now=1000, blob;
 class FakeWorker {
@@ -76,7 +79,7 @@ env.matchMedia=()=>phoneMedia;
 env.window=env;
 vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
-vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; controls();requestAnimationFrame(frame);'),env);
+vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.phaseForTest=renderPhase; controls();requestAnimationFrame(frame);'),env);
 const tick=(ms=120)=>{now+=ms;frame(now);};
 tick();
 assert(elements['#left-info'].innerHTML.includes('일출 시각'));
@@ -130,3 +133,15 @@ elements['#sky'].click();assert.equal(elements['#toggle-info'].attributes['aria-
 phoneMedia.matches=false;phoneMedia.change();elements['#sky'].click();
 assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
 console.log('PASS mobile orbit tap: synced info toggle and 90%/110% radius; desktop unaffected');
+
+for(const [phase,fraction,expected] of [[0,0,0],[90,.5,90],[180,1,180],[270,.5,270]]) {
+ assert(Math.abs(env.phaseForTest({phase,fraction})-expected)<1e-8);
+}
+const seasons=worker.Astronomy.Seasons(2026);
+for(const [key,expected] of [['mar_equinox',180],['jun_solstice',270],['sep_equinox',0],['dec_solstice',90]]) {
+ worker.onmessage({data:{id:3,ms:seasons[key].date.getTime(),lat:35.08,lon:128.89}});
+ const error=((result.current.earth.lon-expected+540)%360)-180;
+ assert(Math.abs(error)<.1,`${key}: ${result.current.earth.lon}`);
+}
+assert(!read('solar-system-web.js').includes('계산하고 있습니다'));
+console.log('PASS science: actual 2026 equinox/solstice longitudes and new/quarter/full phase rendering');

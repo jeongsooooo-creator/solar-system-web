@@ -125,6 +125,7 @@
       }
     }
     out.phase = angle(snapshot.current.phase, snapshot.future.phase,t);
+    out.fraction = lerp(snapshot.current.fraction,snapshot.future.fraction,t);
     return out;
   }
   const tooltip = document.createElement('div');
@@ -179,10 +180,14 @@
     const glow=ctx.createRadialGradient(x,y,r*.5,x,y,r*2.8);glow.addColorStop(0,'#f3c86280');glow.addColorStop(1,'#e3a85200');ctx.fillStyle=glow;ctx.fillRect(x-r*3,y-r*3,r*6,r*6);
     const g=ctx.createRadialGradient(x-r*.3,y-r*.3,1,x,y,r);g.addColorStop(0,'#fff6cb');g.addColorStop(.65,'#f9d37c');g.addColorStop(1,'#d99a3e');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
   }
+  // Supplied photographs, shared by the daily and orbital views.
+  const earthPhoto = document.createElement('img'); earthPhoto.src = 'earth200.png';
+  const moonPhoto = document.createElement('img'); moonPhoto.src = 'moon200.png';
   let moonKey='',moonImage;
+
   function moon(x,y,r,phase,below=false,rotation=0) {
     if(below){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle='#a4bad3';ctx.stroke();return;}
-    const key=Math.round(phase*2);
+    const key=Math.round(phase*2)+":"+(moonPhoto.complete&&moonPhoto.naturalWidth>0);
     if(key!==moonKey){
       moonKey=key;moonImage=document.createElement('canvas');moonImage.width=moonImage.height=80;
       const c=moonImage.getContext('2d'),img=c.createImageData(80,80),p=rad(phase);
@@ -193,6 +198,17 @@
         const shade=(25+205*Math.sqrt(light))*texture,k=(j*80+i)*4;
         img.data[k]=shade;img.data[k+1]=shade*1.015;img.data[k+2]=shade*1.04;img.data[k+3]=255;
       }c.putImageData(img,0,0);
+      if(moonPhoto.complete&&moonPhoto.naturalWidth>0){
+        const texture=document.createElement('canvas');texture.width=texture.height=80;
+        const tc=texture.getContext('2d');tc.drawImage(moonPhoto,0,0,80,80);
+        const photo=tc.getImageData(0,0,80,80);
+        for(let k=0;k<img.data.length;k+=4){
+          const light=img.data[k]/230;
+          for(let channel=0;channel<3;channel++)img.data[k+channel]=photo.data[k+channel]*light;
+          img.data[k+3]=Math.min(img.data[k+3],photo.data[k+3]);
+        }
+        c.putImageData(img,0,0);
+      }
     }
     ctx.save();
     ctx.translate(x,y);
@@ -201,6 +217,10 @@
     ctx.restore();
   }
   function earth(x,y,r) {
+    if(earthPhoto.complete&&earthPhoto.naturalWidth>0){
+      ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();
+      ctx.drawImage(earthPhoto,x-r,y-r,r*2,r*2);ctx.restore();return;
+    }
     ctx.save();ctx.translate(x,y);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.clip();
     const g=ctx.createRadialGradient(-r*.4,-r*.4,0,0,0,r);g.addColorStop(0,'#509ebc');g.addColorStop(1,'#12314f');ctx.fillStyle=g;ctx.fillRect(-r,-r,r*2,r*2);
     ctx.fillStyle='#80bba1';ctx.beginPath();ctx.moveTo(-r*.85,-r*.55);ctx.lineTo(-r*.2,-r*.7);ctx.lineTo(r*.15,-r*.2);ctx.lineTo(-r*.2,r*.08);ctx.lineTo(-r*.1,r*.55);ctx.lineTo(-r*.5,r*.75);ctx.lineTo(-r*.65,r*.1);ctx.closePath();ctx.fill();
@@ -253,11 +273,15 @@
     const sp=project(data.Sun.az,data.Sun.alt),mp=project(data.Moon.az,data.Moon.alt);
     targets.push({key:'sun',x:sp[0],y:sp[1],r:Math.max(8,r*.09)}, {key:'moon',x:mp[0],y:mp[1],r:Math.max(8,r*.085)});
     line([[cx,cy],sp],'#e7bc4830');line([[cx,cy],mp],'#cbdcf330');
-    sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0,moonHorizonRotation(data));
+    sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),renderPhase(data),data.Moon.alt<0,moonHorizonRotation(data));
     targets.push({key:'observer',text:`관찰자(위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°)<br>${facingSouth?'남쪽':'북쪽'}을 향해 서서 관찰함`,x:cx,y:cy,r:20});
     ctx.fillStyle='#a9c5cf';ctx.beginPath();ctx.arc(cx,cy-9,3,0,Math.PI*2);ctx.fill();line([[cx,cy-5],[cx,cy+6]],'#a9c5cf');line([[cx-4,cy+12],[cx,cy+6],[cx+4,cy+12]],'#a9c5cf');
     label('태양과 달의 하루',cx,y+29,'#afc2d8','center',12);
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
+  }
+  function renderPhase(data) {
+    const p=Math.acos(Math.max(-1,Math.min(1,1-2*data.fraction)))*180/Math.PI;
+    return data.phase<=180?p:360-p;
   }
   function orbit(data,box) {
     const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box,true),cx=x+w/2;
@@ -267,9 +291,24 @@
     const mp=[];for(let i=0;i<=90;i++){const t=i*Math.PI/45,d=mr*(1-.0549**2)/(1+.0549*Math.cos(t));mp.push([ex+d*Math.cos(t),ey-d*Math.sin(t)]);}line(mp,'#a9d8ff');
     const m=rad(data.moon.lon),md=mr*(1-.0549**2)/(1+.0549*Math.cos(m));
     targets.push({key:'orbitalSun',text:'태양',x:cx,y:cy,r:Math.max(10,r*.11)}, {key:'earth',x:ex,y:ey,r:Math.max(6,r*.065)}, {key:'orbitalMoon',x:ex+md*Math.cos(m),y:ey-md*Math.sin(m),r:Math.max(4,r*.04)});
-    line([[cx,cy],[ex,ey]],'#558a7f35');sun(cx,cy,Math.max(10,r*.11));earth(ex,ey,Math.max(6,r*.065));moon(ex+md*Math.cos(m),ey-md*Math.sin(m),Math.max(4,r*.04),180);
+    line([[cx,cy],[ex,ey]],'#558a7f35');sun(cx,cy,Math.max(10,r*.11));earth(ex,ey,Math.max(8,r*.075));moon(ex+md*Math.cos(m),ey-md*Math.sin(m),Math.max(7,r*.055),renderPhase(data));
+    // Heliocentric longitude is 180° at the March equinox.
+    for(const [name,t] of [['춘분',Math.PI],['하지',3*Math.PI/2],['추분',0],['동지',Math.PI/2]]){
+      const d=r*(1-.0167**2)/(1+.0167*Math.cos(t)), px=cx+d*Math.cos(t),py=cy-d*Math.sin(t);
+      ctx.fillStyle='#a9e6cb';ctx.beginPath();ctx.arc(px,py,2,0,Math.PI*2);ctx.fill();
+      label(name,px+14*Math.cos(t),py-14*Math.sin(t)+3,'#a9e6cb',Math.cos(t)>.5?'left':Math.cos(t)<-.5?'right':'center',10);
+    }
+    // Phase landmarks rotate with the geocentric Sun direction. These are
+    // longitude-difference definitions, not the Moon's instantaneous location.
+    const sunLongitude=theta+Math.PI;
+    for(const [name,offset] of [['삭',0],['상현',90],['보름',180],['하현',270]]){
+      const t=sunLongitude+rad(offset),d=mr*(1-.0549**2)/(1+.0549*Math.cos(t));
+      const px=ex+d*Math.cos(t),py=ey-d*Math.sin(t);
+      ctx.fillStyle='#b9cde2';ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();
+      label(name,px+8*Math.cos(t),py-8*Math.sin(t)+3,'#b9cde2',Math.cos(t)>.4?'left':Math.cos(t)<-.4?'right':'center',9);
+    }
     label('지구와 달의 공전',cx,y+29,'#afc2d8','center',12);
-    label('황도면을 위에서 본 모습 · 반시계 방향 공전',cx,y+h-38,'#61768e','center',9);
+    label('북황극 쪽에서 본 궤도 · 달 표면은 지구에서 본 위상',cx,y+h-38,'#61768e','center',9);
   }
   function desktopPanels() {
     const half = {x:0,y:0,w:width/2,h:height};
@@ -293,12 +332,12 @@
     }
   }
   function draw(data) {
+    if(!data)return;
     targets = [];
     positionDesktopInfo();
     ctx.clearRect(0,0,width,height);
     // Deterministic, static star field; no visual jitter between frames.
     for(let i=0;i<45;i++){const x=((i*137.508)%997)/997*width,y=((i*i*61.31)%991)/991*height;ctx.fillStyle=i%4?'#92b8db20':'#bed8ee40';ctx.fillRect(x,y,1,1);}
-    if(!data){label('천체의 위치를 계산하고 있습니다',width/2,height/2,'#8fa3bd','center',13);return;}
     if(state.mode===0){
       if(window.matchMedia('(max-width: 760px)').matches){
         daily(data,{x:0,y:0,w:width,h:height/2});
