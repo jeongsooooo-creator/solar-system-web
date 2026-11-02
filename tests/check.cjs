@@ -56,7 +56,7 @@ const steps=[-86400,-3600,-600,-60,60,600,3600,86400].map(step=>new Element({ste
 const speeds=[1,10,60,600,3600,86400].map(speed=>new Element({speed:String(speed)}));
 const groups={'[data-mode]':modes,'[data-step]':steps,'[data-speed]':speeds};
 const documentEvents={};
-const document={querySelector:s=>elements[s], querySelectorAll:s=>groups[s], createElement:()=>new Element(), addEventListener:(type,handler)=>documentEvents[type]=handler};
+const document={readyState:'complete',querySelector:s=>elements[s], querySelectorAll:s=>groups[s], createElement:()=>new Element(), addEventListener:(type,handler)=>documentEvents[type]=handler};
 document.body=new Element();
 const store=new Map();
 let frame, resize, now=1000, blob;
@@ -81,11 +81,16 @@ vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
 vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.phaseForTest=renderPhase; window.lightForTest=orbitalLightAngle; controls();requestAnimationFrame(frame);'),env);
 const tick=(ms=120)=>{now+=ms;frame(now);};
+let diagramDraws=0;
 context.clearRect=()=>{
+ diagramDraws++;
  assert(elements['#left-info'].innerHTML,'Information must be populated before the first diagram');
  assert(elements['#time'].textContent,'Time must be populated before the first diagram');
 };
 tick();
+assert.equal(diagramDraws,0,'Do not draw before the initial layout settles');
+tick();assert.equal(diagramDraws,0);
+tick();assert(diagramDraws>0,'Draw once dimensions have remained stable');
 assert(elements['#left-info'].innerHTML.includes('일출 시각'));
 assert(elements['#right-info'].innerHTML.includes('지구–달 거리'));
 assert(elements['#error'].hidden);

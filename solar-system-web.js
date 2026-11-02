@@ -11,6 +11,8 @@
   const clockFormat = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
   let worker, busy = false, calculationFailed = false, snapshot = null, lastRequest = -Infinity, lastFrame = performance.now(), lastInfo = 0;
   let width = 500, height = 420, lastInfoHTML = '', lastTime = '';
+  let pageReady = document.readyState === 'complete', stableSizeFrames = 0;
+  if(!pageReady) window.addEventListener('load', () => { pageReady=true; stableSizeFrames=0; }, {once:true});
   function error(message) { $('#error').textContent = message; $('#error').hidden = !message; }
   try {
     const workerURL = URL.createObjectURL(new Blob([window.SolarWorkerSource], {type:'text/javascript'}));
@@ -106,6 +108,7 @@
   new ResizeObserver(entries => {
     const box = entries[0].contentRect;
     width = box.width; height = box.height;
+    stableSizeFrames = 0;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -237,9 +240,9 @@
         const t=rad(earthLongitude), lunarExtent=.23*1.055;
         const ex=Math.max(1.017,1.017*Math.abs(Math.cos(t))+lunarExtent);
         const ey=Math.max(1.017,1.017*Math.abs(Math.sin(t))+lunarExtent);
-        r=Math.max(1,Math.min(r*1.25,(box.w/2-34)/ex,(box.h/2-22)/ey));
+        r=Math.max(1,Math.min((box.w/2-34)/ex,(box.h/2-22)/ey));
       }else if(!orbital){
-        r=Math.max(1,Math.min(r*1.18,(box.w/2-20)/1.1,(box.h/2-10)/1.1));
+        r=Math.max(1,Math.min((box.w/2-20)/1.1,(box.h/2-10)/1.1));
       }
     }
     return {r, middle: box.y + box.h / 2};
@@ -375,7 +378,8 @@
       const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`관찰자 위치 : 위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
-    draw(data);
+    // Never show a temporary size while the header/assets and layout settle.
+    if(pageReady && stableSizeFrames++ >= 2) draw(data);
     updateTooltip();
     requestAnimationFrame(frame);
   }
