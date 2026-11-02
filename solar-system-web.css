@@ -110,3 +110,16 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
  .stage .info dt{color:#b8c7d8;font-weight:500}
 }
 @media(max-width:760px) and (max-height:450px){.stage .info,.stage.combined .info{top:60px}}
+
+
+/* Desktop header divider and cursor-following astronomical information. */
+@media(min-width:761px){
+ header{border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:4px}
+ .stage .info.left{position:relative;z-index:1;text-align:right;padding-left:0;padding-right:0}
+ .stage .info.right{position:relative;z-index:1;text-align:left;padding-left:0;padding-right:0}
+}
+.body-tooltip{position:fixed;z-index:20;pointer-events:none;min-width:170px;max-width:calc(100vw - 16px);padding:12px 15px;background:#101b2bf5;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px #0006;text-align:left}
+.body-tooltip[hidden]{display:none}
+.body-tooltip h2{margin:0 0 9px;color:var(--sun)}
+.body-tooltip .datum{margin-bottom:7px}
+.body-tooltip dd{font-size:15px}
