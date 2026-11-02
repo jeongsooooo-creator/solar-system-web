@@ -123,3 +123,19 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
 .body-tooltip h2{margin:0 0 9px;color:var(--sun)}
 .body-tooltip .datum{margin-bottom:7px}
 .body-tooltip dd{font-size:15px}
+
+/* Align desktop labels and values in shared columns, including tooltips. */
+@media(min-width:761px){
+ .stage,.stage.combined{grid-template-columns:210px minmax(0,1fr) 210px}
+ .info dl{display:grid;grid-template-columns:max-content max-content;column-gap:10px;row-gap:7px;align-items:baseline}
+ .info .datum,.combined .info .datum{display:contents}
+ .info dt,.combined .info dt{margin:0;text-align:right;white-space:nowrap}
+ .info dd,.combined .info dd{text-align:left}
+ .stage .info.left dl{justify-content:end}
+ .stage .info.right dl{justify-content:start}
+ .body-tooltip{min-width:0;width:max-content}
+}
+@media(min-width:761px) and (max-width:1050px){
+ .stage,.stage.combined{grid-template-columns:190px minmax(0,1fr) 190px}
+ .stage .info dd{font-size:13px}
+}
