@@ -196,3 +196,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media(max-width:760px) and (max-height:450px){
  main{grid-template-rows:27px 36px minmax(0,1fr) 62px}
 }
+
+/* Information visibility changes text only, never the plot's allocation. */
+@media(max-width:760px){
+ .stage,.stage.combined,.stage.info-hidden,.stage.combined.info-hidden{
+  grid-template-rows:minmax(0,1fr) 96px;
+ }
+}
+@media(max-width:760px) and (max-height:450px){
+ .stage,.stage.combined,.stage.info-hidden,.stage.combined.info-hidden{
+  grid-template-rows:minmax(0,1fr);
+ }
+ .stage.info-hidden .sky{width:min(54%,380px)}
+}

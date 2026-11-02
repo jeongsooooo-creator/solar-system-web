@@ -149,7 +149,7 @@ const visibleOrbit=env.geometryForTest(panel,true).r;
 elements['#sky'].click();
 assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'false');
 const hiddenOrbit=env.geometryForTest(panel,true).r;
-assert(hiddenOrbit >= visibleOrbit);
+assert.equal(hiddenOrbit,visibleOrbit,'Information toggles must preserve the orbit scale');
 elements['#sky'].click();assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
 phoneMedia.matches=false;phoneMedia.change();elements['#sky'].click();
 assert.equal(elements['#toggle-info'].attributes['aria-expanded'],'true');
