@@ -254,7 +254,7 @@
     targets.push({key:'sun',x:sp[0],y:sp[1],r:Math.max(8,r*.09)}, {key:'moon',x:mp[0],y:mp[1],r:Math.max(8,r*.085)});
     line([[cx,cy],sp],'#e7bc4830');line([[cx,cy],mp],'#cbdcf330');
     sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0,moonHorizonRotation(data));
-    targets.push({key:'observer',text:`관찰자(${facingSouth?'남쪽':'북쪽'}을 향해 서서 관찰함)`,x:cx,y:cy,r:20});
+    targets.push({key:'observer',text:`관찰자(위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°)<br>${facingSouth?'남쪽':'북쪽'}을 향해 서서 관찰함`,x:cx,y:cy,r:20});
     ctx.fillStyle='#a9c5cf';ctx.beginPath();ctx.arc(cx,cy-9,3,0,Math.PI*2);ctx.fill();line([[cx,cy-5],[cx,cy+6]],'#a9c5cf');line([[cx-4,cy+12],[cx,cy+6],[cx+4,cy+12]],'#a9c5cf');
     label('태양과 달의 하루',cx,y+29,'#afc2d8','center',12);
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
@@ -321,7 +321,7 @@
     const data=interpolated(now);draw(data);
     if(now-lastInfo>100){
       const mobile=window.matchMedia('(max-width: 760px)').matches;
-      const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`사용자 위치 : ${state.lat.toFixed(2)} , ${state.lon.toFixed(2)}`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
+      const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`관찰자 위치 : 위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
     updateTooltip();
