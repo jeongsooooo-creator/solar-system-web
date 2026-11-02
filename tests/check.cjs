@@ -81,6 +81,10 @@ vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
 vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.phaseForTest=renderPhase; window.lightForTest=orbitalLightAngle; controls();requestAnimationFrame(frame);'),env);
 const tick=(ms=120)=>{now+=ms;frame(now);};
+context.clearRect=()=>{
+ assert(elements['#left-info'].innerHTML,'Information must be populated before the first diagram');
+ assert(elements['#time'].textContent,'Time must be populated before the first diagram');
+};
 tick();
 assert(elements['#left-info'].innerHTML.includes('일출 시각'));
 assert(elements['#right-info'].innerHTML.includes('지구–달 거리'));

@@ -368,12 +368,14 @@
       busy=true;lastRequest=now;
       worker.postMessage({id:state.version,ms:state.ms,lat:state.lat,lon:state.lon,lead:state.playing?state.speed*100:0});
     }
-    const data=interpolated(now);draw(data);
-    if(now-lastInfo>100){
+    const data=interpolated(now);
+    // Populate text before drawing, including the first frame and mode changes.
+    if(now-lastInfo>100 || !lastInfoHTML){
       const mobile=window.matchMedia('(max-width: 760px)').matches;
       const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`관찰자 위치 : 위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
+    draw(data);
     updateTooltip();
     requestAnimationFrame(frame);
   }

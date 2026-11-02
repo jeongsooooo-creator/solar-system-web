@@ -154,8 +154,9 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
 .reference-notes summary{cursor:pointer;padding:8px 0}
 .reference-notes p{max-width:800px;margin:4px auto}
 @media(max-width:760px){
- main{height:100dvh;min-height:0;padding-bottom:max(6px,env(safe-area-inset-bottom))}
- .stage,.stage.combined{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:0 10px;min-height:0}
+ main{height:100svh;min-height:0;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+ .timebar{height:40px;min-height:40px;flex:0 0 40px}
+ .stage,.stage.combined{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) 100px;gap:0 10px;min-height:0}
  .stage .sky,.stage.combined .sky{position:relative;inset:auto;grid-column:1/-1;grid-row:1;width:100%;height:auto;min-height:0}
  .stage .info,.stage.combined .info{position:static;grid-row:2;max-width:none;min-width:0;padding:3px 0 5px;background:transparent;text-shadow:none;transform:none}
  .stage .info.left{grid-column:1}.stage .info.right{grid-column:2;text-align:left}
