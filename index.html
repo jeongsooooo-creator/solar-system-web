@@ -21,9 +21,9 @@
   <meta name="twitter:title" content="태양과 지구와 달">
   <meta name="twitter:description" content="하루의 움직임부터 우주의 궤도까지">
   <meta name="twitter:image" content="https://jeongsooooo-creator.github.io/solar-system-web/solar-system-preview-credit.png">
-  <link rel="stylesheet" href="solar-system-web.css?v=20261103-fit6">
+  <link rel="stylesheet" href="solar-system-web.css?v=20261103-paint7">
   <script src="solar-system-worker.bundle.js" defer></script>
-  <script src="solar-system-web.js?v=20261103-fit6" defer></script>
+  <script src="solar-system-web.js?v=20261103-paint7" defer></script>
 </head>
 <body>
 <main>
@@ -32,7 +32,7 @@
   <section class="timebar" aria-label="관측 시각"><span id="status" class="status">실시간</span><time id="time">계산 준비 중</time><span class="zone">KST · UTC+9</span></section>
   <section class="stage" aria-label="천체 애니메이션">
     <div id="left-info" class="info left"></div>
-    <div class="sky"><canvas id="sky" aria-label="태양과 달의 위치와 공전 궤도"></canvas><div class="legend"><span class="sun-dot"></span>태양 <span class="moon-dot"></span>달 <span class="earth-dot"></span>지구 / 지평선</div></div>
+    <div class="sky"><canvas style="visibility:hidden" id="sky" aria-label="태양과 달의 위치와 공전 궤도"></canvas><div class="legend"><span class="sun-dot"></span>태양 <span class="moon-dot"></span>달 <span class="earth-dot"></span>지구 / 지평선</div></div>
     <div id="right-info" class="info right"></div>
   </section>
   <p id="error" role="alert" hidden></p>

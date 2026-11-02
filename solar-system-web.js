@@ -11,8 +11,9 @@
   const clockFormat = new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
   let worker, busy = false, calculationFailed = false, snapshot = null, lastRequest = -Infinity, lastFrame = performance.now(), lastInfo = 0;
   let width = 500, height = 420, lastInfoHTML = '', lastTime = '';
-  let pageReady = document.readyState === 'complete', stableSizeFrames = 0;
-  if(!pageReady) window.addEventListener('load', () => { pageReady=true; stableSizeFrames=0; }, {once:true});
+  let pageReady = document.readyState === 'complete', firstPaint = false;
+  let pendingSize = null, currentDpr = 1, sizeChangedAt = performance.now();
+  if(!pageReady) window.addEventListener('load', () => { pageReady=true; sizeChangedAt=performance.now(); }, {once:true});
   function error(message) { $('#error').textContent = message; $('#error').hidden = !message; }
   try {
     const workerURL = URL.createObjectURL(new Blob([window.SolarWorkerSource], {type:'text/javascript'}));
@@ -107,11 +108,13 @@
   if (/Android|iPhone|iPod/i.test(navigator.userAgent)) locateDevice();
   new ResizeObserver(entries => {
     const box = entries[0].contentRect;
-    width = box.width; height = box.height;
-    stableSizeFrames = 0;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const previous = pendingSize || {width,height,dpr:currentDpr};
+    if(previous.width===box.width && previous.height===box.height && previous.dpr===dpr)return;
+    // Assigning canvas.width/height clears its pixels. Defer that operation
+    // until the animation frame can redraw immediately, with no blank frame.
+    pendingSize={width:box.width,height:box.height,dpr};
+    sizeChangedAt=performance.now();
   }).observe(canvas.parentElement);
   function lerp(a,b,t) { return a + (b-a)*t; }
   function angle(a,b,t) { return a + ((b-a+540)%360-180)*t; }
@@ -186,6 +189,12 @@
   // Supplied photographs, shared by the daily and orbital views.
   const earthPhoto = document.createElement('img'); earthPhoto.src = 'earth200.png';
   const moonPhoto = document.createElement('img'); moonPhoto.src = 'moon200.png';
+  let assetsReady = !earthPhoto.decode && !document.fonts;
+  if(!assetsReady) Promise.all([
+    earthPhoto.decode ? earthPhoto.decode().catch(()=>{}) : Promise.resolve(),
+    moonPhoto.decode ? moonPhoto.decode().catch(()=>{}) : Promise.resolve(),
+    document.fonts ? document.fonts.ready : Promise.resolve()
+  ]).then(()=>{assetsReady=true;sizeChangedAt=performance.now();});
   let moonKey='',moonImage;
 
   function moon(x,y,r,phase,below=false,rotation=0) {
@@ -378,8 +387,20 @@
       const text=timeFormat.format(new Date(state.ms))+(mobile?'\n':'  ')+`관찰자 위치 : 위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°`;if(text!==lastTime){$('#time').textContent=text;$('#time').dateTime=new Date(state.ms).toISOString();lastTime=text;}
       if(data)info(data);lastInfo=now;
     }
-    // Never show a temporary size while the header/assets and layout settle.
-    if(pageReady && stableSizeFrames++ >= 2) draw(data);
+    // Reveal only the fully rendered first frame, after layout has settled.
+    // Later resizes clear and repaint in this same frame rather than flashing.
+    if(pageReady && assetsReady && data && (firstPaint || now-sizeChangedAt>=350)){
+      if(pendingSize){
+        width=pendingSize.width;height=pendingSize.height;currentDpr=pendingSize.dpr;
+        const pw=Math.round(width*currentDpr),ph=Math.round(height*currentDpr);
+        if(canvas.width!==pw)canvas.width=pw;
+        if(canvas.height!==ph)canvas.height=ph;
+        ctx.setTransform(currentDpr,0,0,currentDpr,0,0);
+        pendingSize=null;
+      }
+      draw(data);
+      canvas.style.visibility='visible';firstPaint=true;
+    }
     updateTooltip();
     requestAnimationFrame(frame);
   }
