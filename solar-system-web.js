@@ -283,6 +283,13 @@
     const p=Math.acos(Math.max(-1,Math.min(1,1-2*data.fraction)))*180/Math.PI;
     return data.phase<=180?p:360-p;
   }
+  function orbitalLightAngle(data) {
+    // Actual distances, not the exaggerated on-screen lunar orbit.
+    const e=rad(data.earth.lon),m=rad(data.moon.lon);
+    const d=data.moon.distance/149597870.7;
+    return Math.atan2(data.earth.distance*Math.sin(e)+d*Math.sin(m),
+      -data.earth.distance*Math.cos(e)-d*Math.cos(m));
+  }
   function orbit(data,box) {
     const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box,true),cx=x+w/2;
     const points=[];for(let i=0;i<=180;i++){const t=i*Math.PI/90,d=r*(1-.0167**2)/(1+.0167*Math.cos(t));points.push([cx+d*Math.cos(t),cy-d*Math.sin(t)]);}line(points,'#55d6b0');
@@ -291,7 +298,7 @@
     const mp=[];for(let i=0;i<=90;i++){const t=i*Math.PI/45,d=mr*(1-.0549**2)/(1+.0549*Math.cos(t));mp.push([ex+d*Math.cos(t),ey-d*Math.sin(t)]);}line(mp,'#a9d8ff');
     const m=rad(data.moon.lon),md=mr*(1-.0549**2)/(1+.0549*Math.cos(m));
     targets.push({key:'orbitalSun',text:'태양',x:cx,y:cy,r:Math.max(10,r*.11)}, {key:'earth',x:ex,y:ey,r:Math.max(6,r*.065)}, {key:'orbitalMoon',x:ex+md*Math.cos(m),y:ey-md*Math.sin(m),r:Math.max(4,r*.04)});
-    line([[cx,cy],[ex,ey]],'#558a7f35');sun(cx,cy,Math.max(10,r*.11));earth(ex,ey,Math.max(8,r*.075));moon(ex+md*Math.cos(m),ey-md*Math.sin(m),Math.max(7,r*.055),renderPhase(data));
+    line([[cx,cy],[ex,ey]],'#558a7f35');sun(cx,cy,Math.max(10,r*.11));earth(ex,ey,Math.max(8,r*.075));moon(ex+md*Math.cos(m),ey-md*Math.sin(m),Math.max(7,r*.055),90,false,orbitalLightAngle(data));
     // Heliocentric longitude is 180° at the March equinox.
     for(const [name,t] of [['춘분',Math.PI],['하지',3*Math.PI/2],['추분',0],['동지',Math.PI/2]]){
       const d=r*(1-.0167**2)/(1+.0167*Math.cos(t)), px=cx+d*Math.cos(t),py=cy-d*Math.sin(t);
@@ -308,7 +315,7 @@
       label(name,px+8*Math.cos(t),py-8*Math.sin(t)+3,'#b9cde2',Math.cos(t)>.4?'left':Math.cos(t)<-.4?'right':'center',9);
     }
     label('지구와 달의 공전',cx,y+29,'#afc2d8','center',12);
-    label('북황극 쪽에서 본 궤도 · 달 표면은 지구에서 본 위상',cx,y+h-38,'#61768e','center',9);
+    label('북황극 쪽에서 본 모습 · 달의 태양 쪽 절반이 밝음',cx,y+h-38,'#61768e','center',9);
   }
   function desktopPanels() {
     const half = {x:0,y:0,w:width/2,h:height};

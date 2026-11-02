@@ -79,7 +79,7 @@ env.matchMedia=()=>phoneMedia;
 env.window=env;
 vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
-vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.phaseForTest=renderPhase; controls();requestAnimationFrame(frame);'),env);
+vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.phaseForTest=renderPhase; window.lightForTest=orbitalLightAngle; controls();requestAnimationFrame(frame);'),env);
 const tick=(ms=120)=>{now+=ms;frame(now);};
 tick();
 assert(elements['#left-info'].innerHTML.includes('일출 시각'));
@@ -145,3 +145,13 @@ for(const [key,expected] of [['mar_equinox',180],['jun_solstice',270],['sep_equi
 }
 assert(!read('solar-system-web.js').includes('계산하고 있습니다'));
 console.log('PASS science: actual 2026 equinox/solstice longitudes and new/quarter/full phase rendering');
+for(const earthLon of [0,90,180,270])for(const moonLon of [0,90,180,270]){
+ const a=env.lightForTest({earth:{lon:earthLon,distance:1},moon:{lon:moonLon,distance:384400}});
+ const towardEarthSun=Math.atan2(Math.sin(earthLon*Math.PI/180),-Math.cos(earthLon*Math.PI/180));
+ const error=Math.atan2(Math.sin(a-towardEarthSun),Math.cos(a-towardEarthSun));
+ assert(Math.abs(error)<.003,'Actual Moon–Sun direction must stay within 0.18 degrees of Earth–Sun direction');
+ const dx=-Math.cos(earthLon*Math.PI/180)-384400/149597870.7*Math.cos(moonLon*Math.PI/180);
+ const dy=Math.sin(earthLon*Math.PI/180)+384400/149597870.7*Math.sin(moonLon*Math.PI/180);
+ assert(Math.cos(a)*dx+Math.sin(a)*dy>0);
+}
+console.log('PASS orbital lighting: Sun-facing half disk, actual AU/km distance ratio, all quadrants');
