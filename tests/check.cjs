@@ -162,3 +162,17 @@ for(const [w,h] of [[280,240],[304,300],[344,390],[374,480]]) {
 }
 assert(!read('solar-system-web.js').includes("label('점선은 지평선 아래의 경로"));
 console.log('PASS compact phone geometry and removed diagram captions');
+phoneMedia.matches=true;
+for(const [w,h] of [[304,224],[344,300],[374,420]]){
+ const box={x:0,y:0,w,h},before=env.geometryForTest(box,true).r;
+ for(let lon=0;lon<360;lon+=15){
+  const after=env.geometryForTest(box,true,lon).r,t=lon*Math.PI/180;
+  const ex=Math.max(1.017,1.017*Math.abs(Math.cos(t))+.23*1.055);
+  const ey=Math.max(1.017,1.017*Math.abs(Math.sin(t))+.23*1.055);
+  assert(after>=before*.9);
+  assert(after*ex+34<=w/2+1e-6);
+  assert(after*ey+22<=h/2+1e-6);
+ }
+}
+assert(env.geometryForTest({x:0,y:0,w:304,h:224},true,40).r > env.geometryForTest({x:0,y:0,w:304,h:224},true).r*1.2);
+console.log('PASS enlarged mobile orbit: all seasonal positions fit with labels');

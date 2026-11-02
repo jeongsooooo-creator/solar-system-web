@@ -226,11 +226,22 @@
     ctx.fillStyle='#80bba1';ctx.beginPath();ctx.moveTo(-r*.85,-r*.55);ctx.lineTo(-r*.2,-r*.7);ctx.lineTo(r*.15,-r*.2);ctx.lineTo(-r*.2,r*.08);ctx.lineTo(-r*.1,r*.55);ctx.lineTo(-r*.5,r*.75);ctx.lineTo(-r*.65,r*.1);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.ellipse(r*.6,r*.15,r*.3,r*.4,-.5,0,Math.PI*2);ctx.fill();ctx.restore();ctx.strokeStyle='#92d5dc50';ctx.beginPath();ctx.arc(x,y,r+1,0,Math.PI*2);ctx.stroke();
   }
-  function diagramFrame(box, orbital=false) {
+  function diagramFrame(box, orbital=false, earthLongitude=null) {
     // Fit the panel while keeping labels and the outer Moon orbit inside it.
     const extent = orbital ? 1.3 : 1.12;
-    const r = Math.max(1, Math.min((box.w / 2 - 22) / extent,
+    let r = Math.max(1, Math.min((box.w / 2 - 22) / extent,
       (box.h / 2 - 24) / extent));
+    if(phone.matches){
+      if(orbital && earthLongitude!==null){
+        // Reserve space where the Moon actually is, instead of a full outer ring.
+        const t=rad(earthLongitude), lunarExtent=.23*1.055;
+        const ex=Math.max(1.017,1.017*Math.abs(Math.cos(t))+lunarExtent);
+        const ey=Math.max(1.017,1.017*Math.abs(Math.sin(t))+lunarExtent);
+        r=Math.max(1,Math.min(r*1.25,(box.w/2-34)/ex,(box.h/2-22)/ey));
+      }else if(!orbital){
+        r=Math.max(1,Math.min(r*1.18,(box.w/2-20)/1.1,(box.h/2-10)/1.1));
+      }
+    }
     return {r, middle: box.y + box.h / 2};
   }
   function moonHorizonRotation(data) {
@@ -286,7 +297,7 @@
       -data.earth.distance*Math.cos(e)-d*Math.cos(m));
   }
   function orbit(data,box) {
-    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box,true),cx=x+w/2;
+    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box,true,data.earth.lon),cx=x+w/2;
     const points=[];for(let i=0;i<=180;i++){const t=i*Math.PI/90,d=r*(1-.0167**2)/(1+.0167*Math.cos(t));points.push([cx+d*Math.cos(t),cy-d*Math.sin(t)]);}line(points,'#55d6b0');
     const theta=rad(data.earth.lon),re=r*(1-.0167**2)/(1+.0167*Math.cos(theta));
     const ex=cx+re*Math.cos(theta),ey=cy-re*Math.sin(theta),mr=r*.23;
