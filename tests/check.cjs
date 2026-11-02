@@ -197,3 +197,11 @@ for(const [w,h] of [[304,224],[344,300],[374,420]]){
 }
 assert(env.geometryForTest({x:0,y:0,w:304,h:224},true,40).r > env.geometryForTest({x:0,y:0,w:304,h:224},true).r*1.2);
 console.log('PASS enlarged mobile orbit: all seasonal positions fit with labels');
+
+
+
+phoneMedia.matches=true;
+const visiblePhone=env.geometryForTest({x:0,y:0,w:304,h:224},true,40).r;
+const expandedPhone=env.geometryForTest({x:0,y:0,w:304,h:320},true,40).r;
+assert(expandedPhone>visiblePhone,'Reclaimed information space must enlarge the orbit');
+console.log('PASS phone: reclaimed information area enlarges the diagram');
