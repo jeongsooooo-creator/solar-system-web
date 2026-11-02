@@ -182,3 +182,17 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
  .stage .info.left{left:0}.stage .info.right{right:0}
  .stage.info-hidden .sky{width:100%}
 }
+
+/* Fixed outer tracks prevent late mobile text sizing from stealing plot space. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:760px){
+ main{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:56px 36px minmax(0,1fr) 62px 30px;row-gap:0}
+ main>header{grid-row:1}main>.timebar{grid-row:2}main>.stage{grid-row:3}
+ main>.controls{grid-row:4}main>footer{grid-row:5}
+ main>.controls{height:62px;min-height:0;display:grid;grid-template-rows:27px 27px;gap:4px;padding-top:4px;align-content:start}
+ main>footer{height:30px;min-height:0;padding-top:4px}
+ #error{position:absolute;z-index:5;left:8px;right:8px;bottom:96px;margin:0}
+}
+@media(max-width:760px) and (max-height:450px){
+ main{grid-template-rows:27px 36px minmax(0,1fr) 62px}
+}

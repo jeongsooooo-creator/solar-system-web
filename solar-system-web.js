@@ -395,6 +395,9 @@
         const pw=Math.round(width*currentDpr),ph=Math.round(height*currentDpr);
         if(canvas.width!==pw)canvas.width=pw;
         if(canvas.height!==ph)canvas.height=ph;
+        // Keep CSS from stretching the old bitmap between a layout change
+        // and this redraw. Change display and backing sizes atomically.
+        canvas.style.width=width+'px';canvas.style.height=height+'px';
         ctx.setTransform(currentDpr,0,0,currentDpr,0,0);
         pendingSize=null;
       }
