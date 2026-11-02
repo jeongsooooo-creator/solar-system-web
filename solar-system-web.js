@@ -230,11 +230,8 @@
     // Fit the panel while keeping labels and the outer Moon orbit inside it.
     const extent = orbital ? 1.3 : 1.12;
     const r = Math.max(1, Math.min((box.w / 2 - 22) / extent,
-      (box.h / 2 - 48) / extent));
-    const radius = phone.matches ? (showInfo ? r * .9 : Math.min(r * 1.1,
-      Math.max(1, (box.w / 2 - 6) / extent),
-      Math.max(1, (box.h / 2 - 34) / extent))) : r;
-    return {r: radius, middle: box.y + box.h / 2 - 5};
+      (box.h / 2 - 24) / extent));
+    return {r, middle: box.y + box.h / 2};
   }
   function moonHorizonRotation(data) {
     // Resolve the direction of sunlight into the Moon's local right/up sky basis.
@@ -276,8 +273,6 @@
     sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),renderPhase(data),data.Moon.alt<0,moonHorizonRotation(data));
     targets.push({key:'observer',text:`관찰자(위도 ${state.lat.toFixed(4)}°, 경도 ${state.lon.toFixed(4)}°)<br>${facingSouth?'남쪽':'북쪽'}을 향해 서서 관찰함`,x:cx,y:cy,r:20});
     ctx.fillStyle='#a9c5cf';ctx.beginPath();ctx.arc(cx,cy-9,3,0,Math.PI*2);ctx.fill();line([[cx,cy-5],[cx,cy+6]],'#a9c5cf');line([[cx-4,cy+12],[cx,cy+6],[cx+4,cy+12]],'#a9c5cf');
-    label('태양과 달의 하루',cx,y+29,'#afc2d8','center',12);
-    label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
   }
   function renderPhase(data) {
     const p=Math.acos(Math.max(-1,Math.min(1,1-2*data.fraction)))*180/Math.PI;
@@ -314,8 +309,6 @@
       ctx.fillStyle='#b9cde2';ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();
       label(name,px+8*Math.cos(t),py-8*Math.sin(t)+3,'#b9cde2',Math.cos(t)>.4?'left':Math.cos(t)<-.4?'right':'center',9);
     }
-    label('지구와 달의 공전',cx,y+29,'#afc2d8','center',12);
-    label('북황극 쪽에서 본 모습 · 달의 태양 쪽 절반이 밝음',cx,y+h-38,'#61768e','center',9);
   }
   function desktopPanels() {
     const half = {x:0,y:0,w:width/2,h:height};

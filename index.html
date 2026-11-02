@@ -21,9 +21,9 @@
   <meta name="twitter:title" content="태양과 지구와 달">
   <meta name="twitter:description" content="하루의 움직임부터 우주의 궤도까지">
   <meta name="twitter:image" content="https://jeongsooooo-creator.github.io/solar-system-web/solar-system-preview-credit.png">
-  <link rel="stylesheet" href="solar-system-web.css?v=20261103-light2">
+  <link rel="stylesheet" href="solar-system-web.css?v=20261103-mobile3">
   <script src="solar-system-worker.bundle.js" defer></script>
-  <script src="solar-system-web.js?v=20261103-light2" defer></script>
+  <script src="solar-system-web.js?v=20261103-mobile3" defer></script>
 </head>
 <body>
 <main>
@@ -40,8 +40,9 @@
     <div class="steps"><button data-step="-86400">-1일</button><button data-step="-3600">-1시간</button><button data-step="3600">+1시간</button><button data-step="86400">+1일</button></div>
     <div class="playback"><button id="pause">일시정지</button><button id="now" class="selected">실시간으로</button><span class="speed-label">배속</span><div class="speeds" aria-label="재생 배속"><button data-speed="1" aria-pressed="true">1배</button><button data-speed="10" aria-pressed="false">10배</button><button data-speed="60" aria-pressed="false">60배</button><button data-speed="600" aria-pressed="false">600배</button><button data-speed="3600" aria-pressed="false">3,600배</button><button data-speed="86400" aria-pressed="false">86,400배</button></div></div>
   </section>
-  <footer><form id="location-form"><span>관측 위치</span><label>위도 <input id="latitude" type="number" min="-90" max="90" step="0.0001" value="35.08" required></label><label>경도 <input id="longitude" type="number" min="-180" max="180" step="0.0001" value="128.89" required></label><button type="submit">적용</button><button type="button" id="locate">내 위치</button></form><p>← → 1시간 이동 <b>·</b> Space 재생/정지 <b>·</b> Home 현재 시각 <b>·</b> 1 / 2 / 3 화면 선택</p><p class="note">시각은 한국 표준시입니다. 천체 크기와 궤도 거리는 관찰을 위해 확대·축소한 모식도입니다.</p></footer>
+  <footer><form id="location-form"><span>관측 위치</span><label>위도 <input id="latitude" type="number" min="-90" max="90" step="0.0001" value="35.08" required></label><label>경도 <input id="longitude" type="number" min="-180" max="180" step="0.0001" value="128.89" required></label><button type="submit">적용</button><button type="button" id="locate">내 위치</button></form><p>← → 1시간 이동 <b>·</b> Space 재생/정지 <b>·</b> Home 현재 시각 <b>·</b> 1 / 2 / 3 화면 선택</p></footer>
 </main>
+<details class="reference-notes"><summary>참고 사항</summary><p>시각은 한국 표준시(KST)입니다. 공전 그림은 북황극 쪽에서 본 모식도이며, 천체 크기와 궤도 거리는 관찰을 위해 확대·축소했습니다. 공전 화면의 달은 태양 쪽 절반이 밝게 보이고, 삭·상현·보름·하현 표지는 지구에서 보는 위상을 뜻합니다.</p></details>
 <noscript>이 시뮬레이터를 사용하려면 JavaScript를 활성화해 주세요.</noscript>
 </body>
 </html>

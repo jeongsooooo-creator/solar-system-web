@@ -148,3 +148,32 @@ footer p{margin:5px 0 0;line-height:1.5}footer button{min-height:28px;padding:4p
  .stage.combined .info h2{grid-column:1/-1}
  .stage.combined .info dl{display:contents}
 }
+
+/* Mobile: reserve separate rows for the diagram and compact information. */
+.reference-notes{margin:0 20px 16px;color:var(--muted);font-size:11px;line-height:1.7}
+.reference-notes summary{cursor:pointer;padding:8px 0}
+.reference-notes p{max-width:800px;margin:4px auto}
+@media(max-width:760px){
+ main{height:100dvh;min-height:0;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+ .stage,.stage.combined{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:0 10px;min-height:0}
+ .stage .sky,.stage.combined .sky{position:relative;inset:auto;grid-column:1/-1;grid-row:1;width:100%;height:auto;min-height:0}
+ .stage .info,.stage.combined .info{position:static;grid-row:2;max-width:none;min-width:0;padding:3px 0 5px;background:transparent;text-shadow:none;transform:none}
+ .stage .info.left{grid-column:1}.stage .info.right{grid-column:2;text-align:left}
+ .stage .info h2{font-size:9px;line-height:12px;margin:0 0 3px}
+ .stage .info dl{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:baseline;column-gap:4px;row-gap:2px}
+ .stage .info .datum{display:contents}
+ .stage .info dt{font-size:9px;line-height:15px;margin:0;white-space:nowrap}
+ .stage .info dd{font-size:10px;line-height:15px;margin:0;text-align:right}
+ .stage .info small{font-size:8px}
+ .stage.info-hidden{grid-template-rows:minmax(0,1fr)}
+ .stage.info-hidden .info{display:none}
+ .legend{display:none}
+ .reference-notes{margin:0 8px 12px;font-size:10px}
+}
+@media(max-width:760px) and (max-height:450px){
+ .stage,.stage.combined{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
+ .stage .sky,.stage.combined .sky{grid-column:1;grid-row:1;margin:auto;width:min(54%,380px);height:100%}
+ .stage .info,.stage.combined .info{position:absolute;top:50%;width:22%;transform:translateY(-50%);grid-row:auto;padding:0}
+ .stage .info.left{left:0}.stage .info.right{right:0}
+ .stage.info-hidden .sky{width:100%}
+}
