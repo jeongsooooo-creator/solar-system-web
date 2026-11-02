@@ -137,7 +137,7 @@
     const rect = canvas.getBoundingClientRect();
     const target = !phone.matches && pointer && targets.slice().reverse().find(t =>
       Math.hypot(pointer.x - rect.left - t.x, pointer.y - rect.top - t.y) <= Math.max(t.r, 12));
-    const html = target && tooltipBlocks[target.key];
+    const html = target && (target.text || tooltipBlocks[target.key]);
     tooltip.hidden = !html;
     canvas.style.cursor = target ? 'pointer' : '';
     if (!html) return;
@@ -254,6 +254,7 @@
     targets.push({key:'sun',x:sp[0],y:sp[1],r:Math.max(8,r*.09)}, {key:'moon',x:mp[0],y:mp[1],r:Math.max(8,r*.085)});
     line([[cx,cy],sp],'#e7bc4830');line([[cx,cy],mp],'#cbdcf330');
     sun(...sp,Math.max(8,r*.09),data.Sun.alt<0);moon(...mp,Math.max(8,r*.085),data.phase,data.Moon.alt<0,moonHorizonRotation(data));
+    targets.push({key:'observer',text:`관찰자(${facingSouth?'남쪽':'북쪽'}을 향해 서서 관찰함)`,x:cx,y:cy,r:20});
     ctx.fillStyle='#a9c5cf';ctx.beginPath();ctx.arc(cx,cy-9,3,0,Math.PI*2);ctx.fill();line([[cx,cy-5],[cx,cy+6]],'#a9c5cf');line([[cx-4,cy+12],[cx,cy+6],[cx+4,cy+12]],'#a9c5cf');
     label('태양과 달의 하루',cx,y+29,'#afc2d8','center',12);
     label('점선은 지평선 아래의 경로',cx,y+h-38,'#61768e','center',9);
@@ -265,7 +266,7 @@
     const ex=cx+re*Math.cos(theta),ey=cy-re*Math.sin(theta),mr=r*.23;
     const mp=[];for(let i=0;i<=90;i++){const t=i*Math.PI/45,d=mr*(1-.0549**2)/(1+.0549*Math.cos(t));mp.push([ex+d*Math.cos(t),ey-d*Math.sin(t)]);}line(mp,'#a9d8ff');
     const m=rad(data.moon.lon),md=mr*(1-.0549**2)/(1+.0549*Math.cos(m));
-    targets.push({key:'earth',x:cx,y:cy,r:Math.max(10,r*.11)}, {key:'earth',x:ex,y:ey,r:Math.max(6,r*.065)}, {key:'orbitalMoon',x:ex+md*Math.cos(m),y:ey-md*Math.sin(m),r:Math.max(4,r*.04)});
+    targets.push({key:'orbitalSun',text:'태양',x:cx,y:cy,r:Math.max(10,r*.11)}, {key:'earth',x:ex,y:ey,r:Math.max(6,r*.065)}, {key:'orbitalMoon',x:ex+md*Math.cos(m),y:ey-md*Math.sin(m),r:Math.max(4,r*.04)});
     line([[cx,cy],[ex,ey]],'#558a7f35');sun(cx,cy,Math.max(10,r*.11));earth(ex,ey,Math.max(6,r*.065));moon(ex+md*Math.cos(m),ey-md*Math.sin(m),Math.max(4,r*.04),180);
     label('지구와 달의 공전',cx,y+29,'#afc2d8','center',12);
     label('황도면을 위에서 본 모습 · 반시계 방향 공전',cx,y+h-38,'#61768e','center',9);
