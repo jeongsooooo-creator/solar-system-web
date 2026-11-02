@@ -3,6 +3,8 @@
   const $ = selector => document.querySelector(selector);
   const canvas = $('#sky'), ctx = canvas.getContext('2d');
   const phone = window.matchMedia('(max-width: 760px)');
+  const kakaoBrowser = /KAKAOTALK/i.test(navigator.userAgent || '');
+  const openedAt = performance.now();
   let showInfo = true;
   const state = {ms: Date.now(), live: true, playing: true, speed: 1, mode: phone.matches ? 1 : 0, lat: 35.08, lon: 128.89, version: 0};
   const MIN = Date.parse('1900-01-01T00:00:00+09:00'), MAX = Date.parse('2050-12-31T23:59:59+09:00');
@@ -14,6 +16,24 @@
   let pageReady = document.readyState === 'complete', firstPaint = false;
   let pendingSize = null, currentDpr = 1, sizeChangedAt = performance.now();
   if(!pageReady) window.addEventListener('load', () => { pageReady=true; sizeChangedAt=performance.now(); }, {once:true});
+  function usableViewportHeight(innerHeight, visualHeight) {
+    const heights=[innerHeight,visualHeight].filter(v=>Number.isFinite(v)&&v>0);
+    return heights.length ? Math.floor(Math.min(...heights)) : null;
+  }
+  function syncKakaoViewport() {
+    if(!kakaoBrowser || !phone.matches)return;
+    const h=usableViewportHeight(window.innerHeight,window.visualViewport?.height);
+    if(h!==null) $('main').style.height=h+'px';
+    sizeChangedAt=performance.now();
+  }
+  if(kakaoBrowser){
+    // Kakao's native bars can finish opening after the document load event.
+    // Track the real visible area instead of trusting provisional svh values.
+    window.addEventListener('resize',syncKakaoViewport);
+    window.visualViewport?.addEventListener('resize',syncKakaoViewport);
+    window.addEventListener('pageshow',syncKakaoViewport);
+    syncKakaoViewport();
+  }
   function error(message) { $('#error').textContent = message; $('#error').hidden = !message; }
   try {
     const workerURL = URL.createObjectURL(new Blob([window.SolarWorkerSource], {type:'text/javascript'}));
@@ -389,7 +409,9 @@
     }
     // Reveal only the fully rendered first frame, after layout has settled.
     // Later resizes clear and repaint in this same frame rather than flashing.
-    if(pageReady && assetsReady && data && (firstPaint || now-sizeChangedAt>=350)){
+    const initialLayoutReady = now-sizeChangedAt >= (kakaoBrowser?600:350)
+      && (!kakaoBrowser || now-openedAt>=1500);
+    if(pageReady && assetsReady && data && (firstPaint || initialLayoutReady)){
       if(pendingSize){
         width=pendingSize.width;height=pendingSize.height;currentDpr=pendingSize.dpr;
         const pw=Math.round(width*currentDpr),ph=Math.round(height*currentDpr);

@@ -79,7 +79,7 @@ env.matchMedia=()=>phoneMedia;
 env.window=env;
 vm.createContext(env);
 vm.runInContext(read('solar-system-worker.bundle.js'),env);
-vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.phaseForTest=renderPhase; window.lightForTest=orbitalLightAngle; controls();requestAnimationFrame(frame);'),env);
+vm.runInContext(read('solar-system-web.js').replace('  controls();requestAnimationFrame(frame);', '  window.geometryForTest = diagramFrame; window.viewportForTest=usableViewportHeight; window.phaseForTest=renderPhase; window.lightForTest=orbitalLightAngle; controls();requestAnimationFrame(frame);'),env);
 const tick=(ms=120)=>{now+=ms;frame(now);};
 let diagramDraws=0;
 context.clearRect=()=>{
@@ -205,3 +205,24 @@ const visiblePhone=env.geometryForTest({x:0,y:0,w:304,h:224},true,40).r;
 const expandedPhone=env.geometryForTest({x:0,y:0,w:304,h:320},true,40).r;
 assert(expandedPhone>visiblePhone,'Reclaimed information space must enlarge the orbit');
 console.log('PASS phone: reclaimed information area enlarges the diagram');
+assert.equal(env.viewportForTest(700,520),520);
+assert.equal(env.viewportForTest(520,700),520);
+assert.equal(env.viewportForTest(520,undefined),520);
+assert.equal(env.viewportForTest(undefined,0),null);
+console.log('PASS embedded-browser viewport: use the visible height after native bars appear');
+elements.main=new Element();
+let kakaoFrame,viewportResize;
+const kakao={...env,navigator:{userAgent:'KAKAOTALK'},innerHeight:700,
+ addEventListener(){},visualViewport:{height:520,addEventListener(type,handler){viewportResize=handler;}},
+ requestAnimationFrame:callback=>kakaoFrame=callback};
+kakao.window=kakao;
+vm.createContext(kakao);
+vm.runInContext(read('solar-system-web.js'),kakao);
+assert.equal(elements.main.style.height,'520px');
+const beforeKakaoDraw=diagramDraws;
+now+=1000;kakaoFrame(now);assert.equal(diagramDraws,beforeKakaoDraw);
+kakao.visualViewport.height=480;viewportResize();
+assert.equal(elements.main.style.height,'480px');
+now+=400;kakaoFrame(now);assert.equal(diagramDraws,beforeKakaoDraw);
+now+=300;kakaoFrame(now);assert(diagramDraws>beforeKakaoDraw);
+console.log('PASS Kakao startup: wait for native bars and stable visible viewport before first draw');
