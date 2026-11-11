@@ -298,6 +298,13 @@
       cx+direction*r*Math.cos(rad(alt))*Math.sin(rad(az)),
       cy-r*Math.sin(rad(alt))*Math.cos(tilt)-direction*r*Math.sin(tilt)*Math.cos(rad(alt))*Math.cos(rad(az))
     ];
+    ctx.save();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
     const horizon=[];for(let i=0;i<=120;i++)horizon.push(project(i*3,0));
     ctx.beginPath();horizon.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.fillStyle='#2b655b12';ctx.fill();line(horizon,'#55d6b0');
     for(const [body,color] of [['Sun','#ffd166'],['Moon','#a9d8ff']]){
