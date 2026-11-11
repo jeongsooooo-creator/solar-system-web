@@ -289,8 +289,8 @@
     const textureSide=Math.sin(rad(data.phase))>=0?0:Math.PI;
     return Math.atan2(Math.sin(limb-textureSide),Math.cos(limb-textureSide));
   }
-  function daily(data,box) {
-    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box),cx=x+w/2;
+  function daily(data,box,matchOrbit=false) {
+    const {x,y,w,h}=box,{r,middle:cy}=diagramFrame(box,matchOrbit),cx=x+w/2;
     const tilt=rad(8);
     // Keep the horizon center at the same fixed y as the orbital Sun.
     const facingSouth=state.lat>=data.Sun.dec,direction=facingSouth?-1:1;
@@ -299,7 +299,7 @@
       cy-r*Math.sin(rad(alt))*Math.cos(tilt)-direction*r*Math.sin(tilt)*Math.cos(rad(alt))*Math.cos(rad(az))
     ];
     ctx.save();
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = 'rgba(160, 160, 160, 0.25)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -371,7 +371,7 @@
     if (phone.matches) return;
     const panels = state.mode === 0 ? desktopPanels() : [{x:0,y:0,w:width,h:height}];
     const leftPanel = panels[0], rightPanel = panels[panels.length-1];
-    const leftEdge = leftPanel.x+leftPanel.w/2-diagramFrame(leftPanel,state.mode===2).r*(state.mode===2?1.3:1.12);
+    const leftEdge = leftPanel.x+leftPanel.w/2-diagramFrame(leftPanel,state.mode!==1).r*(state.mode===2?1.3:1.12);
     const rightEdge = rightPanel.x+rightPanel.w/2+diagramFrame(rightPanel,state.mode!==1).r*(state.mode===1?1.12:1.3);
     const left = Math.max(0,leftEdge-26), right = Math.min(0,rightEdge-width+26);
     const spacing = left+','+right;
@@ -394,7 +394,7 @@
         orbit(data,{x:0,y:height/2,w:width,h:height/2});
       }else{
         const panels = desktopPanels();
-        daily(data,panels[0]);
+        daily(data,panels[0],true);
         orbit(data,panels[1]);
       }
     }else(state.mode===1?daily:orbit)(data,{x:0,y:0,w:width,h:height});
